@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1FCC26"
+    tools:context=".activities.StationCreateActivity">
+
+
+    <EditText
+        android:id="@+id/stationRname"
+        android:layout_width="347dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="208dp"
+        android:ems="10"
+        android:hint="Station Name"
+        android:includeFontPadding="false"
+        android:inputType="textPersonName"
+        android:paddingLeft="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/stationRdescription"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="28dp"
+        android:ems="10"
+        android:hint="Description od Station"
+        android:inputType="text|textLongMessage"
+        android:paddingLeft="20dp"
+        app:layout_constraintEnd_toEndOf="@+id/stationRname"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/stationRname"
+        app:layout_constraintTop_toBottomOf="@+id/stationRname" />
+
+    <Button
+        android:id="@+id/stationR_add_btn"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="48dp"
+        android:text="Add Station"
+        android:textColor="@android:color/white"
+        app:layout_constraintEnd_toEndOf="@+id/stationRdescription"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/stationRdescription"
+        app:layout_constraintTop_toBottomOf="@+id/stationRdescription" />
+
+    <Button
+        android:id="@+id/select_station_Rphoto"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/rounded_image"
+        android:text="Click to Select Image"
+        app:layout_constraintBottom_toTopOf="@+id/stationCname"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.275" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/station_Rimage"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:civ_border_color="#FF000000"
+        app:civ_border_width="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/stationRname"
+        app:layout_constraintEnd_toEndOf="@+id/select_station_Rphoto"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/select_station_Rphoto"
+        app:layout_constraintTop_toTopOf="@+id/select_station_Rphoto"
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/station_ok_button"
+        android:layout_width="328dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:text="OK"
+        app:layout_constraintEnd_toEndOf="@+id/stationR_add_btn"
+        app:layout_constraintHorizontal_bias="0.918"
+        app:layout_constraintStart_toStartOf="@+id/stationR_add_btn"
+        app:layout_constraintTop_toBottomOf="@+id/stationR_add_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/menu_new_message"
+        android:title="New Message">
+    </item>
+    <item android:id="@+id/menu_new_event"
+        android:title="New Event">
+    </item>
+    <item android:id="@+id/menu_list_events"
+        android:title="List Events">
+    </item>
+    <item android:id="@+id/menu_new_station"
+        android:title="New Station">
+    </item>
+    <item android:id="@+id/menu_create_station"
+        android:title="Create Station">
+    </item>
+
+    <item android:id="@+id/menu_manage_members"
+        android:title="Allocate Mems">
+    </item>
+
+    <item android:id="@+id/menu_sign_out"
+        android:title="Sign Out">
+</item>
+    <item android:id="@+id/menu_leaderboard"
+        android:title="Leaderboard">
+    </item>
+
+
+</menu>
