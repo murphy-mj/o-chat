@@ -364,16 +364,7 @@ class UserEventActivity : AppCompatActivity(), EventListener {
                 Log.d("Event menu", "in Menu")
                 startActivity(intent)
             }
-            com.me.o_chat.R.id.menu_new_station -> {
-                val intent = Intent(this,NewStationActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
-            }
-            com.me.o_chat.R.id.menu_create_station -> {
-                val intent = Intent(this,StationCreateActivity::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
+
             com.me.o_chat.R.id.menu_manage_members -> {
                 val intent = Intent(this,HomeFragments::class.java)
                 Log.d("FA menu", "in Menu create")

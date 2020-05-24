@@ -11,7 +11,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_ChatLog"
         android:layout_width="match_parent"
-        android:layout_height="686dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/et_chatlog"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.872"
@@ -34,6 +34,7 @@
         android:id="@+id/b_chatlog"
         android:layout_width="90dp"
         android:layout_height="44dp"
+        android:textColor="#00EC1414"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="MissingConstraints"

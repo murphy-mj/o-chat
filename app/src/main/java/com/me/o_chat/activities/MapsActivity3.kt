@@ -43,10 +43,8 @@ class MapsActivity3 : AppCompatActivity(), OnMapReadyCallback, com.google.androi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-      //  setContentView(R.layout.activity_station_create_p2)
-      //  setContentView(content_station_maps)
+
         setContentView(activity_maps3)
-//        mapView.onCreate(savedInstanceState)
         if (intent.hasExtra("sUid")) {
             currentStationID = intent.extras?.getString("sUid")!!
             eId = intent.extras?.getString("EventId")!!
@@ -63,14 +61,12 @@ class MapsActivity3 : AppCompatActivity(), OnMapReadyCallback, com.google.androi
          mapFragment.getMapAsync(this)
    //    mapView.getMapAsync(this)
 
+
+        //once the Admin has moved the marker to the desire location,
+        // this will return to list events
         map_btn.setOnClickListener() {
-            Log.d("Station","Going to Image Act3 from MapsActivity3")
-            val extras = Bundle()
-            val intent: Intent = Intent(this, ImageCaptureActivity::class.java)
-                extras.putString("sUid", currentStationID)
-                extras.putString("EventN",eName)
-                extras.putString("EventId",eId)
-                intent.putExtras(extras)
+            val intent: Intent = Intent(this, EventActivity::class.java)
+
                 startActivity(intent)
             }
         }
@@ -163,6 +159,18 @@ class MapsActivity3 : AppCompatActivity(), OnMapReadyCallback, com.google.androi
 
 
     }
+
+    // map_btn.setOnClickListener() {
+    //            Log.d("Station","Going to Image Act3 from MapsActivity3")
+    //            val extras = Bundle()
+    //            val intent: Intent = Intent(this, ImageCaptureActivity::class.java)
+    //                extras.putString("sUid", currentStationID)
+    //                extras.putString("EventN",eName)
+    //                extras.putString("EventId",eId)
+    //                intent.putExtras(extras)
+    //                startActivity(intent)
+    //            }
+    //        }
 
 }
 

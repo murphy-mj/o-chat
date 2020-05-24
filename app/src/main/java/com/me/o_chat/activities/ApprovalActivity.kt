@@ -33,8 +33,13 @@ class ApprovalActivity : AppCompatActivity() {
 
 
         btn_approve.setOnClickListener() {
+
             FirebaseDatabase.getInstance().reference.child("users").child(userIn.uUid.toString())
-                .child("events").child(eventIn.eUid).setValue(eventIn).addOnSuccessListener{
+                .child("uevtApproval").setValue("approved")
+            // this is to allow scope for an Participant to be approved fr more than one event
+            FirebaseDatabase.getInstance().reference.child("users").child(userIn.uUid.toString())
+                .child("events").child(eventIn.eUid).setValue(eventIn)
+                .addOnSuccessListener{
                     val intent = Intent(this,AdminUserActivity::class.java)
                     startActivity(intent)
                 }
@@ -43,7 +48,8 @@ class ApprovalActivity : AppCompatActivity() {
 
         btn_deny.setOnClickListener() {
             FirebaseDatabase.getInstance().reference.child("users").child(userIn.uUid.toString())
-                .child("uOrgRef").setValue("denied").addOnSuccessListener {
+                .child("uevtApproval").setValue("denied")
+                .addOnSuccessListener {
                     val intent = Intent(this,AdminUserActivity::class.java)
                     startActivity(intent)
                 }

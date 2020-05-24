@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.me.o_chat.models.Message
 import com.me.o_chat.models.User
 import kotlinx.android.synthetic.main.card_message.view.*
@@ -60,8 +61,6 @@ class MessageAdapter constructor(var messages: ArrayList<Message>,
 
         fun bind(message: Message, listener: MessageListener) {
             Log.d("message Adapter"," Message${message.uTo}")
-            //
-
                 itemView.tag = message
                 //  itemView.userText.text = message.uText.toString()
                 itemView.mText.text = message.uText.toString()

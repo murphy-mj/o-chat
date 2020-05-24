@@ -19,12 +19,14 @@ import kotlinx.android.synthetic.main.content_event.*
 
 
 
-class AdminUserEventActivity : AppCompatActivity(), EventListener {
+class AdminUserEventActivity : AppCompatActivity() {
+
+/// to class to be deleted
 
 
-    lateinit var  eventList : ArrayList<Event>
-    lateinit var event : Event
-    lateinit var user :User
+    lateinit var eventList: ArrayList<Event>
+    lateinit var event: Event
+    lateinit var user: User
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,30 +34,26 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
         setContentView(R.layout.activity_event)
 
 
-       // user object sent to this activity
-      //  user = intent.getParcelableExtra("Kuser")
+        // user object sent to this activity
+        //  user = intent.getParcelableExtra("Kuser")
 
-        supportActionBar?.title = "Events List"
+        supportActionBar?.title = "DElete me"
         recyclerviewEvent.adapter
 
         eventList = ArrayList<Event>()
 
         // getUsers()
-      //  Log.d("getEvents", "the number of m sent to this Station  ${messageList.size}")
+        //  Log.d("getEvents", "the number of m sent to this Station  ${messageList.size}")
 
 
         val layoutManager = LinearLayoutManager(this)
         recyclerviewEvent.layoutManager = layoutManager as RecyclerView.LayoutManager
 
 
-
-
-
-
         // as we are in this activity, we must be the admin
         // get of th events created and display them for selection
-       // val admin = FirebaseAuth.getInstance().currentUser?.uid.toString()
-       // val ref = FirebaseDatabase.getInstance().reference.child(admin).child("events")
+        // val admin = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        // val ref = FirebaseDatabase.getInstance().reference.child(admin).child("events")
 
         val ref = FirebaseDatabase.getInstance().reference.child("events")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -66,7 +64,7 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
                 p0.children.forEach {
                     Log.d("event", it.toString())
                     var event = it.getValue(Event::class.java)
-                    if(event != null) {
+                    if (event != null) {
                         eventList.add(event!!)
                         recyclerviewEvent.adapter?.notifyDataSetChanged()
                     }
@@ -79,9 +77,8 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
 
 
 
-        recyclerviewEvent.adapter = EventAdapter(eventList, this)
-        recyclerviewEvent.scrollToPosition(recyclerviewEvent.adapter?.itemCount!!)
-
+       // recyclerviewEvent.adapter = EventAdapter(eventList, this)
+       // recyclerviewEvent.scrollToPosition(recyclerviewEvent.adapter?.itemCount!!)
 
 
         //recyclerviewNewMessage.adapter = UserAdapter(userList, this)
@@ -89,53 +86,56 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
     }
 
 
+}
 
 
 
+   //  private fun EventsAllUpToDate(){
+    //        val admin = FirebaseAuth.getInstance().currentUser?.uid.toString()
+    //      //  val  eventId = event.eUid.toString()
+    //       // val ref = FirebaseDatabase.getInstance().getReference("${admin}/events")
+    //        val ref = FirebaseDatabase.getInstance().reference.child(admin).child("events")
+    //            ref.addChildEventListener(object : ChildEventListener {
+    //
+    //            override fun onCancelled(p0: DatabaseError) {
+    //            }
+    //
+    //            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+    //
+    //                    // each time messages db has a new entry, its add to the array list
+    //                    var event = p0.getValue(Event::class.java)
+    //                    if(event != null) {
+    //                        eventList.add(event)
+    //                        recyclerviewEvent.adapter?.notifyDataSetChanged()
+    //                    }
+    //                    ref.removeEventListener(this)
+    //            }
+    //
+    //             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+    //
+    //             }
+    //
+    //             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+    //             }
+    //
+    //             override fun onChildRemoved(p0: DataSnapshot) {
+    //
+    //             }
+    //      })
+    //        Log.d("at EventAdpter", "size =  ${eventList.size}")
+    //
+    //
+    //    }
+    //
+    //    // the event click allocates the User to the event
+    //    override fun onEventClick(event: Event){
+    //        FirebaseDatabase.getInstance().reference.child("users").child(user.uUid.toString())
+    //            .child("events").child(event.eUid).setValue(event)
+    //        }
+    //
 
 
-    private fun EventsAllUpToDate(){
-        val admin = FirebaseAuth.getInstance().currentUser?.uid.toString()
-      //  val  eventId = event.eUid.toString()
-       // val ref = FirebaseDatabase.getInstance().getReference("${admin}/events")
-        val ref = FirebaseDatabase.getInstance().reference.child(admin).child("events")
-            ref.addChildEventListener(object : ChildEventListener {
 
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                    // each time messages db has a new entry, its add to the array list
-                    var event = p0.getValue(Event::class.java)
-                    if(event != null) {
-                        eventList.add(event)
-                        recyclerviewEvent.adapter?.notifyDataSetChanged()
-                    }
-                    ref.removeEventListener(this)
-            }
-
-             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-
-             }
-
-             override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-             }
-
-             override fun onChildRemoved(p0: DataSnapshot) {
-
-             }
-      })
-        Log.d("at EventAdpter", "size =  ${eventList.size}")
-
-
-    }
-
-    // the event click allocates the User to the event
-    override fun onEventClick(event: Event){
-        FirebaseDatabase.getInstance().reference.child("users").child(user.uUid.toString())
-            .child("events").child(event.eUid).setValue(event)
-        }
        // val extras = Bundle()
        // val intent = Intent(this,StationCreateActivity::class.java)
        // intent.putExtra("Kevent",event )
@@ -146,49 +146,49 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
 
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.nav_menu,menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item?.itemId){
-            R.id.menu_new_message -> {
-                val intent = Intent(this,NewMessageActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
-            }
-            R.id.menu_sign_out -> {
-                FirebaseAuth.getInstance().signOut()
-                val intent = Intent(this,LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-            R.id.menu_new_event -> {
-                val intent = Intent(this,EventCreateActivity::class.java)
-                Log.d("Event menu", "in Menu")
-                startActivity(intent)
-            }
-            R.id.menu_new_station -> {
-                val intent = Intent(this,NewStationActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
-            }
-            R.id.menu_create_station -> {
-                val intent = Intent(this,StationCreateActivity::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
-            R.id.menu_manage_members -> {
-                val intent = Intent(this,AdminUserEventActivity::class.java)
-                Log.d("manage members", "in Menu create")
-                startActivity(intent)
-            }
-
-
-        }
-        return super.onOptionsItemSelected(item)
-    }
+    //override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    //        menuInflater.inflate(R.menu.nav_menu,menu)
+    //        return super.onCreateOptionsMenu(menu)
+    //    }
+    //
+    //    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    //        when (item?.itemId){
+    //            R.id.menu_new_message -> {
+    //                val intent = Intent(this,NewMessageActivity::class.java)
+    //                Log.d("FA menu", "in Menu")
+    //                startActivity(intent)
+    //            }
+    //            R.id.menu_sign_out -> {
+    //                FirebaseAuth.getInstance().signOut()
+    //                val intent = Intent(this,LoginActivity::class.java)
+    //                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
+    //                startActivity(intent)
+    //            }
+    //            R.id.menu_new_event -> {
+    //                val intent = Intent(this,EventCreateActivity::class.java)
+    //                Log.d("Event menu", "in Menu")
+    //                startActivity(intent)
+    //            }
+    //            R.id.menu_new_station -> {
+    //                val intent = Intent(this,NewStationActivity::class.java)
+    //                Log.d("FA menu", "in Menu")
+    //                startActivity(intent)
+    //            }
+    //            R.id.menu_create_station -> {
+    //                val intent = Intent(this,StationCreateActivity::class.java)
+    //                Log.d("FA menu", "in Menu create")
+    //                startActivity(intent)
+    //            }
+    //            R.id.menu_manage_members -> {
+    //                val intent = Intent(this,AdminUserEventActivity::class.java)
+    //                Log.d("manage members", "in Menu create")
+    //                startActivity(intent)
+    //            }
+    //
+    //
+    //        }
+    //        return super.onOptionsItemSelected(item)
+    //    }
 
 //to be deleted
     //        Log.d("at userAdpter", "size =  ${eventList.size}")
@@ -277,4 +277,6 @@ class AdminUserEventActivity : AppCompatActivity(), EventListener {
     //      recyclerviewStation.adapter?.notifyDataSetChanged()
     //      recyclerviewStation.scrollToPosition(recyclerviewStation.adapter?.itemCount!!)
     //   }
-}
+
+
+//}

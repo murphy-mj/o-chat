@@ -63,7 +63,7 @@ class GeofenceBroadcastReceiver :  BroadcastReceiver() {
                     geofencingEvent.triggeringGeofences.isNotEmpty() ->
                         geofencingEvent.triggeringGeofences[0].requestId
                     else -> {
-                        Log.e(TAG, "No Geofence Trigger Found! Abort mission!")
+                        Log.e(TAG, "No Geofence Trigger Found!")
                         return
                     }
                 }

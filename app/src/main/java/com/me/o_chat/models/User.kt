@@ -11,9 +11,10 @@ class User(var uName: String = "",
            var uImage: String = "",
            var uUid: String = "",
            var uOrgRef :String = "",
+           var uEvtApproval:String="",
            var uType:String = ""
 
 
 ) : Parcelable  {
-    constructor(): this("","","","","","")
+    constructor(): this("","","","","","pending","")
 }

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -14,14 +15,19 @@ import com.me.o_chat.*
 import com.me.o_chat.R
 import com.me.o_chat.models.Event
 import com.me.o_chat.models.User
+import kotlinx.android.synthetic.main.activity_admin_user.*
 import kotlinx.android.synthetic.main.content_event.*
 
 
 // this lists the all the Events associated with Current user
+// if the current user is an Organiser/Administrator then the next activity will be add a Station
+// if the current user is Participant, then the next activity will be a GoogleMap with all the Stations
+
+// we have to use a menu, rather than using Back because this is activated from two sources
 
 class EventActivity : AppCompatActivity(), EventListener {
 
-
+    lateinit var eventList2: ArrayList<Event>
     lateinit var eventList: ArrayList<Event>
     lateinit var event: Event
     lateinit var currentUser: User
@@ -40,6 +46,8 @@ class EventActivity : AppCompatActivity(), EventListener {
         val layoutManager = LinearLayoutManager(this)
         recyclerviewEvent.layoutManager = layoutManager as RecyclerView.LayoutManager
         eventList = ArrayList<Event>()
+        eventList2 = ArrayList<Event>()
+
         Log.d("UserId is",userId)
         getCurrentUser({getEvents()},userId)
 
@@ -48,10 +56,11 @@ class EventActivity : AppCompatActivity(), EventListener {
 
     }
 
-
+// if the Current User is an Organiser, the by Clicking the Events allows Stations to be added
+// The Station Created requires the Event Information and the current users information
+// if Participant, Googlemap onlt requires the Event's Details
 
     override fun onEventClick(event: Event) {
-        Log.d("Click Me","in On Event Click")
         if (currentUser.uType == "Admin") {
             val intent = Intent(this, StationCreateActivity::class.java)
             intent.putExtra("Kevent", event)
@@ -59,7 +68,6 @@ class EventActivity : AppCompatActivity(), EventListener {
             startActivity(intent)
         } else {
             // else the participant does to the Map
-            Log.d("Click Me","in On Event Click Participant")
             val intent = Intent(this, MapUserSationsAllActivity::class.java)
             intent.putExtra("Kevent", event)
             startActivity(intent)
@@ -69,18 +77,25 @@ class EventActivity : AppCompatActivity(), EventListener {
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.nav_menu, menu)
+        menuInflater.inflate(R.menu.nav_limited, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
-    // only admin should have access to create an event
+
+    // This Activity has only a limited menu
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item?.itemId) {
-            R.id.menu_new_message -> {
-                val intent = Intent(this, NewMessageActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
+
+            R.id.menu_main -> {
+                val intentA = Intent(this, FirstAdminActivity::class.java)
+                val intentP = Intent(this, FirstActivity::class.java)
+                if(currentUser.uType == "Admin"){
+                startActivity(intentA)
+                } else {
+                    startActivity(intentP)
+                }
+
             }
             R.id.menu_sign_out -> {
                 FirebaseAuth.getInstance().signOut()
@@ -89,35 +104,14 @@ class EventActivity : AppCompatActivity(), EventListener {
                 startActivity(intent)
             }
 
-            R.id.menu_new_event -> {
-                if (currentUser.uType == "Admin") {
-                    val intent = Intent(this, EventCreateActivity::class.java)
-                    Log.d("Event menu", "in Menu")
-                    startActivity(intent)
-                } else {
-                    // Toast
-                }
-            }
 
-            R.id.menu_manage_members -> {
-                if (currentUser.uType == "Admin") {
-                    val intent = Intent(this,AdminUserEventActivity::class.java)
-                    Log.d("manage members", "in Menu create")
-                    startActivity(intent)
-
-
-                } else {
-                    //Toast
-
-                }
-            }
         }
             return super.onOptionsItemSelected(item)
     }
 
+//1. first requirement is the current logged in User
 
     private fun getCurrentUser(stationsReady: () -> Unit,userId: String) {
-        Log.d("in get Current User", "getting Current User Object")
         val stationListener = object : ValueEventListener {
 
             override fun onCancelled(p0: DatabaseError) {
@@ -125,10 +119,9 @@ class EventActivity : AppCompatActivity(), EventListener {
 
             override fun onDataChange(p0: DataSnapshot) {
                 var user = p0.getValue(User::class.java)
-                Log.d("Current User all", "${user!!.uEmail}")
                 if(user != null) {
                     currentUser = user
-                    Log.d("Current User", "${currentUser.uEmail}")
+                 //   getUserApprovedEvents()
                     stationsReady()
                 }
             }
@@ -136,6 +129,8 @@ class EventActivity : AppCompatActivity(), EventListener {
         db.child("/users/${userId}").addListenerForSingleValueEvent(stationListener)
     }
 
+//2. Once we have the current user, and the type of user
+//   we can add the events to the eventList Array
 
     private fun getEvents() {
         eventList.clear()
@@ -145,7 +140,7 @@ class EventActivity : AppCompatActivity(), EventListener {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                Log.d("events get to match ", currentUser.uOrgRef.toString())
+
                 p0.children.forEach {
                     // Log.d("event", it.toString())
                     var event = it.getValue(Event::class.java)
@@ -155,8 +150,11 @@ class EventActivity : AppCompatActivity(), EventListener {
                     Log.d("event OeCode", it.child("ecode").value.toString())
                     //   if (event != null && eOrganiser == userId) {
                     if (currentUser.uType != "Admin") {
-                        if (event != null && eCde == currentUser.uOrgRef && eCde != null) {
+                        // only allowing participant to be have access to the event when they have received approval from organiser
+                        if (event != null && eCde == currentUser.uOrgRef && eCde != null && currentUser.uEvtApproval == "approved") {
                             eventList.add(event!!)
+                        } else{
+                         Toast.makeText(this@EventActivity, "status of event access ${currentUser.uEvtApproval}", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         if (event != null && eOrganiser == userId) {
@@ -164,7 +162,6 @@ class EventActivity : AppCompatActivity(), EventListener {
                         }
                     }
                 }
-                Log.d("event list size", eventList.size.toString())
                 recyclerviewEvent.adapter?.notifyDataSetChanged()
                 ref.removeEventListener(this)
 
@@ -172,6 +169,53 @@ class EventActivity : AppCompatActivity(), EventListener {
 
         })
     }
+
+
+
+// for participants, displays a list events that they have been approved for
+// not going to use this now,  allowing for a time where Participants can do more than one event
+
+    private fun  getUserApprovedEvents() {
+        //The current user is an Administrator, and we are seeking all participants that belong to the event selected
+        Log.d("in getUserApproved Events", "in get users")
+        val stationListener = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                Log.d("in GetUsers logged in user type is ", " none")
+                Log.d("in getUsers", "looking for participants of selected events")
+                eventList2.clear()
+
+                p0.children.forEach {
+                    var eventRef = it
+                    var avts = it.child("events")
+                    avts.children.forEach {
+                        Log.d("with admin events key", it.key.toString())
+                        Log.d("with admin evenst value", it.value.toString())
+                        var avts2 = it
+                        Log.d("inside the event events key avts2", avts2.toString())
+                        eventRef.children.forEach {
+                            Log.d("inside the event events key", it.key.toString())
+                            Log.d("inside the  event value", it.value.toString())
+
+                        }
+                    }
+
+//                recyclerviewUser.adapter?.notifyDataSetChanged()
+                }
+            }
+        }
+        db.child("/users/${userId}/events").addListenerForSingleValueEvent(stationListener)
+
+    }
+
+
+
+
+
+
+
         //  to be deleted
 
         //  extras.putString("sUid", event.eUid)

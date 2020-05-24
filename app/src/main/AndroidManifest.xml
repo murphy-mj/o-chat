@@ -9,11 +9,6 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <!--
-        The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-        Google Maps Android API v2, but you must specify either coarse or fine
-        location permissions for the 'MyLocation' functionality.
-    -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -27,12 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".activities.ApprovalActivity"></activity>
-        <activity
-            android:name=".activities.HereAndNowActivity"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTask"
-            android:taskAffinity="" />
+
+
+
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -50,6 +42,10 @@
              You need a different API key for each encryption key, including the release key that is used to
              sign the APK for publishing.
              You can define the keys for the debug and release targets in src/debug/ and src/release/.
+               // android:theme="@style/AppTheme.NoActionBar" if we want no action bar to appear
+                <meta-data
+                android:name="andriod.support.PARENT_ACTIVITY"
+                android:value=".FirstActivity" />
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -58,54 +54,97 @@
         <activity android:name=".activities.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name=".activities.MapsActivity3"
-            android:label="@string/title_activity_maps3" />
+            android:name=".activities.HereAndNowActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="" />
+
+
+
         <activity
             android:name=".activities.MapUserSationsAllActivity"
-            android:label="maps test2" />
+            android:label="Select one Station"
+            android:parentActivityName=".activities.EventActivity" >
+
+        </activity>
+
+        <activity android:name=".activities.MapUserSationSelected3Activity"
+            android:label="Tracking to Station"
+            android:parentActivityName=".activities.EventActivity"/>
+
+        <activity android:name=".activities.EventStartActivity"
+            android:label="Tracking to Station"
+            android:parentActivityName=".activities.FirstAdminActivity"/>
+
+
         <activity
             android:name=".activities.StationCreateActivity"
             android:label="@string/title_activity_station_create"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.ChatActivity">
-            <meta-data
-                android:name="andriod.support.PARENT_ACTIVITY"
-                android:value=".NewMessageActivity" />
+            android:parentActivityName=".activities.NewMessageActivity" />
+
+        <activity android:name=".activities.ChatActivity"
+            android:parentActivityName=".activities.NewMessageActivity">
         </activity>
         <activity android:name=".activities.NewMessageActivity">
-            <meta-data
-                android:name="andriod.support.PARENT_ACTIVITY"
-                android:value=".FirstActivity" />
         </activity>
+        <activity android:name=".activities.ImageCaptureActivity"
+         android:label="Take group photo"
+          android:parentActivityName=".activities.HereAndNowActivity" />
+
+
+        <activity android:name=".main.MainActivity"></activity>
+
+
+        <activity android:name=".activities.MainAdminUserRegActivity" />
+        <activity android:name=".activities.MainUserRegActivity" />
+        <activity android:name=".activities.LoginActivity" />
+
+        <activity android:name=".activities.FirstAdminActivity" />
         <activity
             android:name=".activities.FirstActivity"
             android:label="@string/title_activity_first" />
-        <activity android:name=".main.MainActivity"></activity>
-        <activity android:name=".activities.LoginActivity" />
+
         <activity android:name=".activities.NewStationActivity" />
         <activity android:name=".activities.StationActivity" />
         <activity android:name=".activities.MapsActivity" />
         <activity android:name=".activities.ImageActivity3" />
         <activity android:name=".activities.HomeFragments" />
-        <activity android:name=".activities.ImageCaptureActivity" />
+
+        <activity android:name=".activities.LeaderboardActivity"
+         android:parentActivityName=".activities.FirstActivity" />
+
+
         <activity android:name=".activities.ImageCaptureActivity2" />
         <activity android:name=".activities.EventActivity" />
+
         <activity android:name=".activities.EventCreateActivity" />
-        <activity android:name=".activities.AdminUserEventActivity" />
-        <activity android:name=".activities.AdminUserActivity" />
+
+        <activity android:name=".activities.AdminUserActivity"
+            android:parentActivityName=".activities.FirstAdminActivity">
+        </activity>
+
         <activity android:name=".activities.UserEventActivity" />
-        <activity android:name=".activities.FirstAdminActivity" />
+
         <activity android:name=".activities.MapUserSationSelectedActivity" />
-        <activity android:name=".activities.MapUserSationSelected2Activity" />
-        <activity android:name=".activities.MapUserSationSelected3Activity" />
+
         <activity android:name=".activities.GoalAchievedActivity" />
-        <activity android:name=".activities.MainAdminUserRegActivity" />
-        <activity android:name=".activities.MainUserRegActivity" />
+
+        <activity android:name=".activities.ApprovalActivity"
+        android:parentActivityName=".activities.NewMessageActivity">
+        </activity>
+
+        <activity
+            android:name=".activities.MapsActivity3"
+            android:label="@string/title_activity_maps3" />
+
+
+
+
 
         <service android:name=".service.OcFirebaseMessagingService">
             <intent-filter>
@@ -114,6 +153,12 @@
         </service>
 
         <receiver android:name=".notify.GeofenceBroadcastReceiver" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
+
     </application>
 
 </manifest>

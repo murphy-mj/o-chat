@@ -7,6 +7,7 @@ import android.provider.SyncStateContract.Helpers.update
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
+import androidx.exifinterface.media.ExifInterface
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.me.o_chat.R
@@ -36,9 +37,14 @@ class HereAndNowActivity : AppCompatActivity() {
     private lateinit var eventOut: Event
     private lateinit var EvtResult: Result
     private var numberAchieved: Int = 0;
-    private var timeTaken: Int = 0;
+    private var timeTaken:Long = 0L;
     var stationAch: Boolean = false
     private lateinit var goalInHand: ArrayList<String>
+private lateinit var refId:String
+    lateinit var currentUser: User
+     var eventStartTime : Long =0L
+    var goalAchievedTime : Long =0L
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +54,9 @@ class HereAndNowActivity : AppCompatActivity() {
         goalAch = GoalAchObj()
         EvtResult = Result()
         goalInHand = ArrayList<String>()
+        currentUser = User()
+
+
         /**
          *
          *
@@ -78,7 +87,7 @@ class HereAndNowActivity : AppCompatActivity() {
             getEventObject(evt)
             Log.d("Her and NOw stn ", stn)
             Log.d("Her and NOw evt ", evt)
-            goalAchieved({ hasGoalAchievedAlready(evt, stn, userId) }, evt, stn, userId)
+            getCurrentUser({goalAchieved({ hasGoalAchievedAlready(evt, stn, userId) }, evt, stn, userId)},userId)
         }
 
 
@@ -95,11 +104,48 @@ class HereAndNowActivity : AppCompatActivity() {
             intent.putExtra("Kevent", eventOut)
             startActivity(intent)
         }
+        btn_photo.setOnClickListener {
+            // only calling photo once on achieving the station
+            if(refId != null) {
+                val intent = Intent(this, ImageCaptureActivity::class.java)
+                intent.putExtra("KuserId", userId)
+                intent.putExtra("KeventId", evt)
+                intent.putExtra("KstationId", stn)
+                intent.putExtra("KrefId", refId)
+                startActivity(intent)
+            }
+        }
+
+
 
 
     }
 
     // end of on Create
+
+
+    // we need to get current user, before we gather a list of users
+    private fun  getCurrentUser(stationsReady: () -> Unit,userId:String) {
+        Log.d("in get Current User", "getting Current User Object")
+        val stationListener = object : ValueEventListener {
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                var user = p0.getValue(User::class.java)
+                currentUser = user!!
+                Log.d("Current User","${currentUser.uEmail}")
+                stationsReady()
+            }
+        }
+
+
+        ref1.child("/users/${userId}").addListenerForSingleValueEvent(stationListener)
+    }
+
+
+
 
     private fun getEventObject(evt: String): Unit {
         var myEvent: Event = Event()
@@ -110,6 +156,7 @@ class HereAndNowActivity : AppCompatActivity() {
                     Log.d("Her and NOw evt ", myEvent.toString())
                     if (myEvent != null) {
                         eventOut = myEvent
+                        eventStartTime = myEvent.eStartTime
                     }
                     //    ref1.removeEventListener(this)
                 }
@@ -119,6 +166,79 @@ class HereAndNowActivity : AppCompatActivity() {
                 }
             })
     }
+
+
+
+
+    private fun newGoalAchieved(evt: String, stn: String, userId: String) {
+        val ref = ref1.child("GoalAchieved/${evt}/Stations/${stn}").push()
+        refId = ref.getKey().toString()
+        goalAch.gMessage = inputString
+        goalAch.gStationUid = stn.toString()
+        goalAch.gEventUid = evt
+        goalAch.gTeam = userId
+        goalAch.gTime = System.currentTimeMillis() / 1000
+
+        Log.d("Goal Achieved", "${goalAch.toString()}")
+        Log.d("Goal Achieved shall we post", "${stationAch.toString()}")
+        if (stationAch == false) {
+            ref.setValue(goalAch)
+            goalAchievedTime =  goalAch.gTime
+            getResults({ updateResult(evt, userId) }, evt, userId)
+         //   letsTakePhoto(evt, stn, refId, userId)
+        }
+    }
+
+    // test is gaol has been achieved already
+    private fun hasGoalAchievedAlready(evt: String, stn: String, userId: String) {
+        if (stationAch == false)
+            newGoalAchieved(evt, stn, userId)
+    }
+
+
+    private fun goalAchieved(stationsReady: () -> Unit, evt: String, stn: String, userId: String) {
+        // Once we have the current User informtion we can seek the Administrators of the Event
+        // the Particpants can only talk to Administrators of the Event that they are signed up for
+        // so we interate through the Users that are classed as Admin, and iterate through there evenst
+        // and once we find an uEcode that matches the current user, they are added to list
+        Log.d("in has goalAchieved", "getting closer")
+        val stationListener = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                p0.children.forEach {
+                    var goalA = it.getValue(GoalAchObj::class.java)
+                    if (goalA!!.gTeam == userId && goalA != null && goalA.gStationUid == stn) {
+                        Log.d("Goal Achieved", "Goal Achieved already")
+                        Log.d("Goal Achieved", goalA.gTeam)
+                        goalInHand.add(goalA.gStationUid)
+                        stationAch = true
+                    }
+                    Log.d("Goal Achieved BY someelse ", goalA.gTeam)
+
+                }
+                stationsReady()
+                Log.d("Goal Achieved Array size", goalInHand.size.toString())
+            }
+
+        }
+        ref1.child("GoalAchieved/${evt}/Stations/${stn}")
+            .addListenerForSingleValueEvent(stationListener)
+
+    }
+
+
+    private fun letsTakePhoto(evt:String,stn:String,refId:String,userId:String) {
+        val intent = Intent(this, ImageCaptureActivity::class.java)
+        intent.putExtra("KuserId", userId)
+        intent.putExtra("KeventId", evt)
+        intent.putExtra("KstationId", stn)
+        intent.putExtra("KrefId", refId)
+        startActivity(intent)
+    }
+
+
 
 
     private fun getResults(stationsReady: () -> Unit, evt: String, userId: String) {
@@ -158,7 +278,7 @@ class HereAndNowActivity : AppCompatActivity() {
                     var myResult: Result =
                         dataSnapshot!!.child("${userId}").getValue<Result>(Result::class.java)!!
                     Log.d("Result exits", "${myResult.rUserId.toString()}")
-                    timeTaken = timeTaken + 34
+                    timeTaken = goalAchievedTime - eventStartTime
                     numberAchieved = numberAchieved + 1
                     myResult.rTimeTaken = timeTaken
                     myResult.rNumberAch = numberAchieved
@@ -171,12 +291,13 @@ class HereAndNowActivity : AppCompatActivity() {
                     Log.d("user Result", "not existing")
                     val refRes = ref1.child("Results").child("${evt}").child("${userId!!}")
                     val refResId = refRes.getKey().toString()
-                    timeTaken = timeTaken + 34
+                    timeTaken = goalAchievedTime - eventStartTime
                     numberAchieved = numberAchieved + 1
                     EvtResult.rNumberAch = numberAchieved
                     EvtResult.rTimeTaken = timeTaken
                     EvtResult.rEventId = evt
                     EvtResult.rUserId = userId
+                    EvtResult.rName = currentUser.uName
                     refRes.setValue(EvtResult)
                 }
 
@@ -186,67 +307,6 @@ class HereAndNowActivity : AppCompatActivity() {
 
         ref1.child("Results").child("${evt}").addListenerForSingleValueEvent(stationListener)
     }
-
-
-    private fun newGoalAchieved(evt: String, stn: String, userId: String) {
-        val ref = ref1.child("GoalAchieved/${evt}/Stations/${stn}").push()
-        val refId = ref.getKey().toString()
-        goalAch.gMessage = inputString
-        goalAch.gStationUid = stn.toString()
-        goalAch.gEventUid = evt
-        goalAch.gTeam = userId
-        goalAch.gTime = System.currentTimeMillis() / 1000
-
-        Log.d("Goal Achieved", "${goalAch.toString()}")
-        Log.d("Goal Achieved shall we post", "${stationAch.toString()}")
-        if (stationAch == false) {
-            ref.setValue(goalAch)
-            getResults({ updateResult(evt, userId) }, evt, userId)
-        }
-    }
-
-    // test is gaol has been achieved already
-    private fun hasGoalAchievedAlready(evt: String, stn: String, userId: String) {
-        if (stationAch == false)
-            newGoalAchieved(evt, stn, userId)
-    }
-
-
-
-    private fun  goalAchieved(stationsReady: () -> Unit,evt:String,stn:String,userId:String) {
-        // Once we have the current User informtion we can seek the Administrators of the Event
-        // the Particpants can only talk to Administrators of the Event that they are signed up for
-        // so we interate through the Users that are classed as Admin, and iterate through there evenst
-        // and once we find an uEcode that matches the current user, they are added to list
-        Log.d("in has goal achieved already", "getting closer")
-        val stationListener = object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                p0.children.forEach {
-                    var goalA = it.getValue(GoalAchObj::class.java)
-                    if (goalA!!.gTeam == userId && goalA != null && goalA.gStationUid == stn) {
-                        Log.d("Goal Achieved", "Goal Achieved already")
-                        Log.d("Goal Achieved", goalA.gTeam)
-                        goalInHand.add(goalA.gStationUid)
-                        stationAch = true
-                    }
-                    Log.d("Goal Achieved BY someelse ", goalA.gTeam)
-
-                }
-                stationsReady()
-                Log.d("Goal Achieved Array size", goalInHand.size.toString())
-        }
-
-        }
-        ref1.child("GoalAchieved/${evt}/Stations/${stn}").addListenerForSingleValueEvent(stationListener)
-
-    }
-
-
-
-
 
 
 

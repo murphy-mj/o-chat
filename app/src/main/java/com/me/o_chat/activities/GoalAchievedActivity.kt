@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -48,11 +49,16 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
     lateinit var goal : GoalAchObj
     lateinit var user : User
     lateinit var result : Result
+    lateinit var currentUser: User
+    lateinit var db:DatabaseReference
+    lateinit var userId :String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.me.o_chat.R.layout.activity_goal)
 
+        userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
         StationList = ArrayList<Station>()
         eventList = ArrayList<Event>()
         goalList = ArrayList<GoalAchObj>()
@@ -64,12 +70,12 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
         eventIn = Event()
         user = User()
         result = Result()
+        db = FirebaseDatabase.getInstance().reference
+
+        getCurrentUser({getEvents()},userId)
 
         var eventInId :String = "-M3Nkz3a-u-6Pg51hg2e"
 
-   //     if (intent.hasExtra("Kuser")) {
-          //  user = intent.getParcelableExtra("Kevent")
-    //    }
 
 
         if (intent.hasExtra("Kevent")) {
@@ -77,21 +83,11 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
             // station object sent to this acticity
             eventIn = intent.getParcelableExtra("Kevent")
         }
-    //    if (eventIn != null && eventIn!!.eUid != null || eventIn!!.eUid != "") {
-   //             eventInId = eventIn.eUid
-   //         } else {
-  //              eventInId = "-M3Nkz3a-u-6Pg51hg2e"
-    //    }
+
 
 
         supportActionBar?.title = "Leaderboard"
         recyclerviewGoal.adapter
-
-       // rv_chatlog.adapter
-
-
-        // getUsers()
-      //  Log.d("getEvents", "the number of m sent to this Station  ${messageList.size}")
 
 
         val layoutManager = LinearLayoutManager(this)
@@ -100,48 +96,12 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
 
         Log.d("Goal", "In Goal Achieved Act")
 //these are all the events assocated with the current user
-        val userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
 
         fetchGoals({adapterSuff(goalList)},eventInId)
         fetchUsers({userStuff(userList)},eventInId)
         fetchResults({resultStuff(resultList)},eventInId)
 
-      // for each user
 
-
-
-
-       // val ref = FirebaseDatabase.getInstance().reference.child("users").child(adminId).child("events")
-      //  val ref = FirebaseDatabase.getInstance().reference.child("GoalAchieved")
-
-
-      //  ref.addListenerForSingleValueEvent(object : ValueEventListener {
-       //     override fun onCancelled(p0: DatabaseError) {
-       //     }
-
- //           override fun onDataChange(p0: DataSnapshot) {
-    //            p0.children.forEach {
-   //                 Log.d("Station", it.toString())
-//
-  //                  it.children.forEach {
-    //                    Log.d("Goal", it.toString())
-      //                  var goal = it.getValue(GoalAchObj::class.java)
-        //                if (goal != null) {
-          //                  goalList.add(goal!!)
-            //                recyclerviewGoal.adapter?.notifyDataSetChanged()
-              //          }
-
-                //    }
-
-
-              //  }
-              //  ref.removeEventListener(this)
-
-           // }
-
-       // })
-
-//        Log.d("at userAdpter", "size =  ${eventList.size}")
         val refEvent = FirebaseDatabase.getInstance().reference.child("events")
         refEvent.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -164,101 +124,13 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
 
 
 
-        //
-      //  ref.addChildEventListener(object : ChildEventListener {
 
-        //    override fun onCancelled(p0: DatabaseError) {
-      //      }
-
-      //      override fun onChildAdded(p0: DataSnapshot, p1: String?) {
-
-                    // each time messages db has a new entry, its add to the array list
-        //            var event = p0.getValue(Event::class.java)
-        //            if (event != null) {
-        //                eventList.add(event)
-        //                recyclerviewEvent.adapter?.notifyDataSetChanged()
-        //            }
-        //            ref.removeEventListener(this)
-
-         //   }
-
-        //    override fun onChildMoved(p0: DataSnapshot, p1: String?) {
-
-      //      }
-
-    //        override fun onChildChanged(p0: DataSnapshot, p1: String?) {
-     //       }
-
-      //      override fun onChildRemoved(p0: DataSnapshot) {
-//
-   //         }
-  //      })
-
-
-
-       /// removed adapter stuff
-
-
-
-        //recyclerviewNewMessage.adapter = UserAdapter(userList, this)
-        //    recyclerviewNewMessage.adapter = UserAdapter(userList, this)
     }
 
 
+/////////// End of
 
 
-   // EventsAllUpToDate()
-
-     //   st_button.setOnClickListener{
-     //       Log.d("on Bln","Clicked Station Button")
-     //       sendMessage()
-     //       recyclerviewStation.adapter?.notifyDataSetChanged()
-     //   }
-
-      //  recyclerviewEvent.adapter = EventAdapter(eventList, this)
-      //  recyclerviewEvent.scrollToPosition(recyclerviewEvent.adapter?.itemCount!!)
-
-       // val ref = FirebaseDatabase.getInstance().getReference("/messages")
-       // ref.addListenerForSingleValueEvent(object : ValueEventListener {
-       //     override fun onCancelled(p0: DatabaseError) {
-       //     }
-
-       //     override fun onDataChange(p0: DataSnapshot) {
-       //         p0.children.forEach {
-       //             Log.d("message", it.toString())
-       //             var message = it.getValue(Message::class.java)
-       //             if(message != null) {
-       //                 messageList.add(message!!)
-       //                 recyclerviewChatLog.adapter?.notifyDataSetChanged()
-       //                // rv_chatlog.adapter?.notifyDataSetChanged()
-       //             }
-       //         }
-       //     }
-//
-  //      })
-     //   Log.d("at userAdpter", "size =  ${messageList.size}")
-     //   Log.d("at userAdpter", "size =  ${messageList[0].uText}")
-
-
-
-
-  //  private fun sendMessage(){
-  //      var mes = st_et.text.toString()
-  //      val fromM = FirebaseAuth.getInstance().currentUser?.uid.toString()
-  //      val  toM = station.sUid.toString()
-  //    //  val ref = FirebaseDatabase.getInstance().getReference("/messages").push()
-  //      val ref = FirebaseDatabase.getInstance().getReference("/teams/${fromM}/${toM}").push()
-  //      val refTo = FirebaseDatabase.getInstance().getReference("/stations/${toM}/${fromM}").push()
-  //      val refId = ref.key.toString()
-  //      val refIdTo = refTo.key.toString()
-  //      val messM:Message = Message(mes,"",refId,fromM,toM,System.currentTimeMillis()/1000)
-  //      ref.setValue(messM)
-  //      refTo.setValue(messM).addOnSuccessListener {
-  //          cl_et.text.clear()
-  //      }
-  //      recyclerviewStation.adapter?.notifyDataSetChanged()
-  //      recyclerviewStation.scrollToPosition(recyclerviewStation.adapter?.itemCount!!)
- //   }
 
 
     private fun EventsAllUpToDate(){
@@ -299,27 +171,9 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
     }
 
    override fun onGoalClick(goal: Result){
-      //  val extras = Bundle()
-      //  val intent = Intent(this,MapUserSationsAllActivity::class.java)
-      // intent.putExtra("Kevent",event )
 
-           //(extras.putParcelableArrayList("stations",StationList))},event)
-      // extras.putParcelableArrayList("stations",StationList)
-      //  extras.putString("sUid", event.eUid)
-      //  extras.putString("Event",event.eName)
+       Log.d("Goal Achieved"," OnGoalClick no action required ")
 
-      //  extras.putSerializable("events", convEvent(eventList) as Serializable)
-     //  extras.putParcelableArrayList("events",eventList)
-     //  Log.d(" I UserE SList size","${StationList.size}")
-     //  async{
-       Log.d("Station List","Station List 1 ${StationList.size} On Cliked, sending to PackingActivity")
- //          fetchPlacemarks2({packingActivity(goal)},event)
-     //  uiThread {
-     //      Log.d("Station List","Station List 1 $StationList.size} On Cliked")
-     //      extras.putParcelableArrayList("stations",StationList)
-      //     intent.putExtras(extras)
-      //     startActivity(intent)
-      // }}
     }
 
     fun packingActivity (goal: GoalAchObj){
@@ -340,29 +194,6 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
 
 
 
-    private fun fetchPlacemarks2(stationsReady: () -> Unit, eventIn: Event) {
-        val stationListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                StationList.clear()
-                //dataSnapshot.children.mapNotNullTo(StationList) {
-                //    it.getValue<Station>(Station::class.java)
-                //}
-                dataSnapshot.children.forEach {
-                    var Sat: Station? = it.getValue<Station>(Station::class.java)
-                    if(Sat != null) {
-                        StationList.add(Sat)
-                    }
-                    Log.d("Station List item ", " station des ${Sat?.sUid}")
-                }
-                stationsReady()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                println("loadPost:onCancelled ${databaseError.toException()}")
-            }
-        }
-        FirebaseDatabase.getInstance().reference.child("events").child(eventIn.eUid).child("stations").addListenerForSingleValueEvent(stationListener)
-    }
 
 
 
@@ -376,15 +207,7 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
 
 
 
-//    private fun convEvent(eventL :ArrayList<Event>): ArrayList<Event_S>{
-   //     event_sList = ArrayList<Event_S>()
-    //    eventL.forEach {
-   //         var Ev_s:Event_S = Event_S(it.eUid,it.eName,it.eDescription)
-   //         event_sList.add(Ev_s)
-   //     }
-    //    return  event_sList
 
-  //  }
 
 
 
@@ -411,16 +234,7 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
                 Log.d("Event menu", "in Menu")
                 startActivity(intent)
             }
-            com.me.o_chat.R.id.menu_new_station -> {
-                val intent = Intent(this,NewStationActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
-            }
-            com.me.o_chat.R.id.menu_create_station -> {
-                val intent = Intent(this,StationCreateActivity::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
+
             com.me.o_chat.R.id.menu_manage_members -> {
                 val intent = Intent(this,HomeFragments::class.java)
                 Log.d("FA menu", "in Menu create")
@@ -559,4 +373,275 @@ class GoalAchievedActivity : AppCompatActivity(), GoalListener {
 
     }
 
+
+
+
+    private fun getCurrentUser(stationsReady: () -> Unit,userId: String) {
+        Log.d("in get Current User", "getting Current User Object")
+        val stationListener = object : ValueEventListener {
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                var user = p0.getValue(User::class.java)
+                Log.d("Current User all", "${user!!.uEmail}")
+                if(user != null) {
+                    currentUser = user
+                    Log.d("Current User", "${currentUser.uEmail}")
+                 //  getUserApprovedEvents()
+                    stationsReady()
+                }
+            }
+        }
+        db.child("/users/${userId}").addListenerForSingleValueEvent(stationListener)
+    }
+
+
+    private fun getEvents() {
+        eventList.clear()
+        val ref = db.child("events")
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                Log.d("events get to match ", currentUser.uOrgRef.toString())
+                p0.children.forEach {
+                    // Log.d("event", it.toString())
+                    var event = it.getValue(Event::class.java)
+                    var eCde: String = event!!.eCode.toString()
+                    var eOrganiser: String = event!!.eOrganiser.toString()
+                    Log.d("event ename", it.child("ename").value.toString())
+                    Log.d("event OeCode", it.child("ecode").value.toString())
+                    //   if (event != null && eOrganiser == userId) {
+                    if (currentUser.uType != "Admin") {
+                        // only allowing participant to be have access to the event when they have received approval from organiser
+                        if (event != null && eCde == currentUser.uOrgRef && eCde != null && currentUser.uEvtApproval == "approved") {
+                            eventList.add(event!!)
+                        } else{
+                          //  Toast.makeText(this@EventActivity, "status of event access ${currentUser.uEvtApproval}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        if (event != null && eOrganiser == userId) {
+                            eventList.add(event!!)
+                        }
+                    }
+                }
+                Log.d("event list size", eventList.size.toString())
+                recyclerviewEvent.adapter?.notifyDataSetChanged()
+                ref.removeEventListener(this)
+
+            }
+
+        })
+    }
+
+
+// com.me.o_chat.R.id.menu_new_station -> {
+//                val intent = Intent(this,NewStationActivity::class.java)
+//                Log.d("FA menu", "in Menu")
+//                startActivity(intent)
+//            }
+//            com.me.o_chat.R.id.menu_create_station -> {
+//                val intent = Intent(this,StationCreateActivity::class.java)
+//                Log.d("FA menu", "in Menu create")
+//                startActivity(intent)
+//            }
+
+    // for each user
+
+
+
+
+    // val ref = FirebaseDatabase.getInstance().reference.child("users").child(adminId).child("events")
+    //  val ref = FirebaseDatabase.getInstance().reference.child("GoalAchieved")
+
+
+    //  ref.addListenerForSingleValueEvent(object : ValueEventListener {
+    //     override fun onCancelled(p0: DatabaseError) {
+    //     }
+
+    //           override fun onDataChange(p0: DataSnapshot) {
+    //            p0.children.forEach {
+    //                 Log.d("Station", it.toString())
+//
+    //                  it.children.forEach {
+    //                    Log.d("Goal", it.toString())
+    //                  var goal = it.getValue(GoalAchObj::class.java)
+    //                if (goal != null) {
+    //                  goalList.add(goal!!)
+    //                recyclerviewGoal.adapter?.notifyDataSetChanged()
+    //          }
+
+    //    }
+
+
+    //  }
+    //  ref.removeEventListener(this)
+
+    // }
+
+    // })
+
+
+//    private fun convEvent(eventL :ArrayList<Event>): ArrayList<Event_S>{
+    //     event_sList = ArrayList<Event_S>()
+    //    eventL.forEach {
+    //         var Ev_s:Event_S = Event_S(it.eUid,it.eName,it.eDescription)
+    //         event_sList.add(Ev_s)
+    //     }
+    //    return  event_sList
+
+    //  }
+
+
+    //
+    //  ref.addChildEventListener(object : ChildEventListener {
+
+    //    override fun onCancelled(p0: DatabaseError) {
+    //      }
+
+    //      override fun onChildAdded(p0: DataSnapshot, p1: String?) {
+
+    // each time messages db has a new entry, its add to the array list
+    //            var event = p0.getValue(Event::class.java)
+    //            if (event != null) {
+    //                eventList.add(event)
+    //                recyclerviewEvent.adapter?.notifyDataSetChanged()
+    //            }
+    //            ref.removeEventListener(this)
+
+    //   }
+
+    //    override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+
+    //      }
+
+    //        override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+    //       }
+
+    //      override fun onChildRemoved(p0: DataSnapshot) {
+//
+    //         }
+    //      })
+
+
+
+    /// removed adapter stuff
+
+
+
+    //recyclerviewNewMessage.adapter = UserAdapter(userList, this)
+    //    recyclerviewNewMessage.adapter = UserAdapter(userList, this)
+
+
+
+
+
+    // EventsAllUpToDate()
+
+    //   st_button.setOnClickListener{
+    //       Log.d("on Bln","Clicked Station Button")
+    //       sendMessage()
+    //       recyclerviewStation.adapter?.notifyDataSetChanged()
+    //   }
+
+    //  recyclerviewEvent.adapter = EventAdapter(eventList, this)
+    //  recyclerviewEvent.scrollToPosition(recyclerviewEvent.adapter?.itemCount!!)
+
+    // val ref = FirebaseDatabase.getInstance().getReference("/messages")
+    // ref.addListenerForSingleValueEvent(object : ValueEventListener {
+    //     override fun onCancelled(p0: DatabaseError) {
+    //     }
+
+    //     override fun onDataChange(p0: DataSnapshot) {
+    //         p0.children.forEach {
+    //             Log.d("message", it.toString())
+    //             var message = it.getValue(Message::class.java)
+    //             if(message != null) {
+    //                 messageList.add(message!!)
+    //                 recyclerviewChatLog.adapter?.notifyDataSetChanged()
+    //                // rv_chatlog.adapter?.notifyDataSetChanged()
+    //             }
+    //         }
+    //     }
+//
+    //      })
+    //   Log.d("at userAdpter", "size =  ${messageList.size}")
+    //   Log.d("at userAdpter", "size =  ${messageList[0].uText}")
+
+
+
+
+    //  private fun sendMessage(){
+    //      var mes = st_et.text.toString()
+    //      val fromM = FirebaseAuth.getInstance().currentUser?.uid.toString()
+    //      val  toM = station.sUid.toString()
+    //    //  val ref = FirebaseDatabase.getInstance().getReference("/messages").push()
+    //      val ref = FirebaseDatabase.getInstance().getReference("/teams/${fromM}/${toM}").push()
+    //      val refTo = FirebaseDatabase.getInstance().getReference("/stations/${toM}/${fromM}").push()
+    //      val refId = ref.key.toString()
+    //      val refIdTo = refTo.key.toString()
+    //      val messM:Message = Message(mes,"",refId,fromM,toM,System.currentTimeMillis()/1000)
+    //      ref.setValue(messM)
+    //      refTo.setValue(messM).addOnSuccessListener {
+    //          cl_et.text.clear()
+    //      }
+    //      recyclerviewStation.adapter?.notifyDataSetChanged()
+    //      recyclerviewStation.scrollToPosition(recyclerviewStation.adapter?.itemCount!!)
+    //   }
+
+
+
+
+
+    //  val extras = Bundle()
+    //  val intent = Intent(this,MapUserSationsAllActivity::class.java)
+    // intent.putExtra("Kevent",event )
+
+    //(extras.putParcelableArrayList("stations",StationList))},event)
+    // extras.putParcelableArrayList("stations",StationList)
+    //  extras.putString("sUid", event.eUid)
+    //  extras.putString("Event",event.eName)
+
+    //  extras.putSerializable("events", convEvent(eventList) as Serializable)
+    //  extras.putParcelableArrayList("events",eventList)
+    //  Log.d(" I UserE SList size","${StationList.size}")
+    //  async{
+
+
+    //          fetchPlacemarks2({packingActivity(goal)},event)
+    //  uiThread {
+    //      Log.d("Station List","Station List 1 $StationList.size} On Cliked")
+    //      extras.putParcelableArrayList("stations",StationList)
+    //     intent.putExtras(extras)
+    //     startActivity(intent)
+    // }}
+
+    // private fun fetchPlacemarks2(stationsReady: () -> Unit, eventIn: Event) {
+    //        val stationListener = object : ValueEventListener {
+    //            override fun onDataChange(dataSnapshot: DataSnapshot) {
+    //                StationList.clear()
+    //                //dataSnapshot.children.mapNotNullTo(StationList) {
+    //                //    it.getValue<Station>(Station::class.java)
+    //                //}
+    //                dataSnapshot.children.forEach {
+    //                    var Sat: Station? = it.getValue<Station>(Station::class.java)
+    //                    if(Sat != null) {
+    //                        StationList.add(Sat)
+    //                    }
+    //                    Log.d("Station List item ", " station des ${Sat?.sUid}")
+    //                }
+    //                stationsReady()
+    //            }
+    //
+    //            override fun onCancelled(databaseError: DatabaseError) {
+    //                println("loadPost:onCancelled ${databaseError.toException()}")
+    //            }
+    //        }
+    //        FirebaseDatabase.getInstance().reference.child("events").child(eventIn.eUid).child("stations").addListenerForSingleValueEvent(stationListener)
+    //    }
 }
+
+

@@ -55,32 +55,35 @@ internal object GeofencingConstants {
     val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.HOURS.toMillis(1)
 
     val LANDMARK_DATA = arrayOf(
-        LandmarkDataObject(
-            "golden_gate_bridge",
-            R.string.golden_gate_bridge_hint,
-            R.string.golden_gate_bridge_location,
-            LatLng(37.819927, -122.478256)),
+        LandmarkDataObject("golden_gate_bridge",1,2,LatLng(0.0,0.0))
 
-        LandmarkDataObject(
-            "ferry_building",
-            R.string.ferry_building_hint,
-            R.string.ferry_building_location,
-            LatLng(37.795490, -122.394276)),
+    //    LandmarkDataObject(
+    //        "golden_gate_bridge",
+    //        R.string.golden_gate_bridge_hint,
+    //        R.string.golden_gate_bridge_location,
+    //        LatLng(37.819927, -122.478256)),
 
-        LandmarkDataObject(
-            "pier_39",
-            R.string.pier_39_hint,
-            R.string.pier_39_location,
-            LatLng(37.808674, -122.409821)),
+    ///    LandmarkDataObject(
+    //        "ferry_building",
+    //        R.string.ferry_building_hint,
+    //        R.string.ferry_building_location,
+    //        LatLng(37.795490, -122.394276)),
 
-        LandmarkDataObject(
-           "union_square",
-            R.string.union_square_hint,
-            R.string.union_square_location,
-            LatLng(37.788151, -122.407570))
-    )
+    //    LandmarkDataObject(
+    //        "pier_39",
+    //        R.string.pier_39_hint,
+     //       R.string.pier_39_location,
+      //      LatLng(37.808674, -122.409821)),
+
+      //  LandmarkDataObject(
+      //     "union_square",
+      //      R.string.union_square_hint,
+      //      R.string.union_square_location,
+      //      LatLng(37.788151, -122.407570))
+
+              )
 
     val NUM_LANDMARKS = LANDMARK_DATA.size
-    const val GEOFENCE_RADIUS_IN_METERS = 10f
+    const val GEOFENCE_RADIUS_IN_METERS = 1000f
     const val EXTRA_GEOFENCE_INDEX = "STATION_ID"
 }

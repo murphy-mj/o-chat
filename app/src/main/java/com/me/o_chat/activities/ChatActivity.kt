@@ -33,17 +33,19 @@ class ChatActivity : AppCompatActivity(), MessageListener {
 
         contact = intent.getParcelableExtra("Kuser")
         messageList = ArrayList<Message>()
-        supportActionBar?.title = "Chat with ${contact.uName}"
+        supportActionBar?.title = "Chat to: ${contact.uName}"
+        // as Chat is only ever going to be fom an Organiser to a Participant and vice versa
+        // we need only two icons
         if(contact.uType == "Admin") {
             supportActionBar?.setIcon(R.mipmap.ic_message_in)
         } else {
             supportActionBar?.setIcon(R.mipmap.ic_message_out)
-
         }
+
         recyclerviewChatLog = findViewById<RecyclerView>(R.id.recyclerview_ChatLog)
         val msgAdapter = MessageAdapter(messageList, this, contact)
 
-        val layoutManager = LinearLayoutManager(this)
+        val layoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false)
         recyclerviewChatLog.layoutManager = layoutManager as RecyclerView.LayoutManager
         recyclerviewChatLog.adapter = msgAdapter
 
@@ -51,9 +53,7 @@ class ChatActivity : AppCompatActivity(), MessageListener {
 
 
         b_chatlog.setOnClickListener{
-            Log.d("on Bln","Clicked CL Button")
             sendMessage()
-          //  recyclerviewChatLog.adapter?.notifyDataSetChanged()
         }
 
 
@@ -80,9 +80,10 @@ class ChatActivity : AppCompatActivity(), MessageListener {
         refFrom.setValue(messMf)
         refTo.setValue(messMt).addOnSuccessListener {
         et_chatlog.text.clear()
+            recyclerviewChatLog.adapter?.notifyDataSetChanged()
+            recyclerviewChatLog.scrollToPosition(recyclerviewChatLog.adapter?.itemCount!!)
         }
-        recyclerviewChatLog.adapter?.notifyDataSetChanged()
-        recyclerviewChatLog.scrollToPosition(recyclerviewChatLog.adapter?.itemCount!!)
+
 
     }
 
@@ -129,14 +130,21 @@ class ChatActivity : AppCompatActivity(), MessageListener {
              }
       })
         Log.d("at messageAdpter", "size =  ${messageList.size}")
-
-
     }
 
     override fun onMessageClick(message: Message){
+        var currentUserID = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        // only the receiver of the message can acknowledge a message as being viewed
+        if(currentUserID == message.uTo) {
+            FirebaseDatabase.getInstance()
+                .getReference("/user-messages/${message.uTo}/${message.uFrom}").child(message.uUid)
+                .child("uviewed").setValue(true)
 
-    //    val intent = Intent(this,NewMessageActivity::class.java)
-    //    startActivity(intent)
+            FirebaseDatabase.getInstance()
+                .getReference("/user-messages/${message.uFrom}/${message.uTo}").child(message.uUid)
+                .child("uviewed").setValue(true)
+        }
+
 
     }
 

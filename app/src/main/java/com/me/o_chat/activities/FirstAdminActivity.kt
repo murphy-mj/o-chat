@@ -95,6 +95,12 @@ class FirstAdminActivity : AppCompatActivity(), MessageAdminListener {
                 startActivity(intent)
             }
 
+            R.id.menu_start_event -> {
+                //val intent = Intent(this,HomeFragments::class.java)
+                val intent = Intent(this,EventStartActivity::class.java)
+                startActivity(intent)
+            }
+
 
         }
         return super.onOptionsItemSelected(item)

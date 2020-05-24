@@ -65,11 +65,6 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
         userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
 
-
-
-
-
-       // getEventList({ withMultiChoiceList() },currentUser)
         getEventList({ withMultiChoiceList({getCurrentUser({whichUsers()},userId)}) })
 
         recyclerviewNewMessage.adapter = UserAdapter(userList, this)
@@ -79,7 +74,7 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
     }
 
-
+// we click the Participant or Organiser we need to send a message to
     override fun onUserClick(user: User) {
         val intent = Intent(this, ChatActivity::class.java)
         intent.putExtra("Kuser", user)
@@ -88,59 +83,40 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
     }
 
 
+    // as the user can arrive from different Activities, we are using the limited menu, rather than back arrow
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(com.me.o_chat.R.menu.nav_menu, menu)
+        menuInflater.inflate(com.me.o_chat.R.menu.nav_limited, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item?.itemId) {
-            com.me.o_chat.R.id.menu_new_message -> {
-                val intent = Intent(this, NewMessageActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
+            R.id.menu_main -> {
+                val intentA = Intent(this, FirstAdminActivity::class.java)
+                val intentP = Intent(this, FirstActivity::class.java)
+                if(currentUser.uType == "Admin"){
+                    startActivity(intentA)
+                } else {
+                    startActivity(intentP)
+                }
+
             }
-            com.me.o_chat.R.id.menu_sign_out -> {
+            R.id.menu_sign_out -> {
                 FirebaseAuth.getInstance().signOut()
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK.or(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }
-            com.me.o_chat.R.id.menu_new_event -> {
-                val intent = Intent(this, EventCreateActivity::class.java)
-                Log.d("Event menu", "in Menu")
-                startActivity(intent)
-            }
-            com.me.o_chat.R.id.menu_new_station -> {
-                val intent = Intent(this, NewStationActivity::class.java)
-                Log.d("FA menu", "in Menu")
-                startActivity(intent)
-            }
-            com.me.o_chat.R.id.menu_create_station -> {
-                val intent = Intent(this, StationCreateActivity::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
-            com.me.o_chat.R.id.menu_manage_members -> {
-                val intent = Intent(this, HomeFragments::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
-            R.id.menu_leaderboard -> {
-                val intent = Intent(this, GoalAchievedActivity::class.java)
-                Log.d("FA menu", "in Menu create")
-                startActivity(intent)
-            }
-
 
         }
         return super.onOptionsItemSelected(item)
     }
 
-
-    private fun  getEventList(stationsReady: () -> Unit) {
-        Log.d("in Get Event List", "getting a list of events associated with Admin")
+//1. get the events that the Organiser has created or the participant has been accepted for
+//  from these events we can get the public Event Codes
+     private fun  getEventList(stationsReady: () -> Unit) {
+        Log.d("in Get Event List", "getting a list of events associated with Admin/participant")
         val stationListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
@@ -153,7 +129,7 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
                     tst.children.forEach {
                         Log.d("with getevntsList key", it.key.toString())
                         Log.d("with geteventList value", it.value.toString())
-                        if (it.key.toString() == "uEcode") {
+                        if (it.key.toString() == "uEcode" ||  it.key.toString() == "ecode") {
                             var i = items.size
                             // items.set(i,it.value.toString())
                             items.add(i,it.value.toString())
@@ -172,7 +148,7 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
 
 
-
+//2. Once we have the Eents codes, the current logged in person can select which Event they want
     fun withMultiChoiceList(stationsReady: () -> Unit) {
         Log.d("with multi choice list",items.size.toString())
         val listP = arrayOfNulls<String>(items.size)
@@ -205,7 +181,7 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
 
 
-    // we need to get current user, before we gather a list of users
+//3. we need to get current user, before we gather a list of users
     private fun  getCurrentUser(stationsReady: () -> Unit,userId:String) {
         Log.d("in get Current User", "getting Current User Object")
         val stationListener = object : ValueEventListener {
@@ -229,43 +205,32 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
 
 
-
+//4. based on the loggin in User type - determines
   private fun whichUsers(){
     if (currentUser.uType == "Admin") {
        getUsers()
     } else {
-        getUsersOther()
+        if(currentUser.uEvtApproval == "approved") {
+            getUsersOther()
+        } else{
+            Toast.makeText(this, "status of event access ${currentUser.uEvtApproval}", Toast.LENGTH_SHORT).show()
+        }
+
     }
     }
 
-
+//4.a If the current user is an Administrator, and we are seeking all participants that belong to the event selected
         private fun  getUsers() {
-          //The current user is an Administrator, and we are seeking all participants that belong to the event selected
-            Log.d("in getUsers", "in get users")
             val stationListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                Log.d("in GetUsers logged in user type is "," ${currentUser.uType}")
-                Log.d("in getUsers", "looking for participants of selected events")
                 userList.clear()
 
                 p0.children.forEach {
                         var user = it.getValue(User::class.java)
-
-
-                        for(item in selectedList){
-                           // var s = it.getValue(String::class.java)
-                            var s = it.value
-                            Log.d("selected List","${s}")
-                        }
-
-                    // only interested in participants in the same evnt
-                        selectedStrings.forEach {
-                            Log.d("selected String element","$it")
-                        }
-
+                    // only interested in Participants in the same event, selectedStrings holds the public event codes
                         if (user != null && user.uType != "Admin" && selectedStrings.contains(user.uOrgRef)) {
                             userList.add(user!!)
                         }
@@ -279,14 +244,11 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
     }
 
-
+//4.b Once we have the current User information we can seek the Administrators of the Event
+    // the Participants can only talk to the Administrator/Organiser of the Event that they are approved up for
+    // so we interate through the Users that are classed as Admin, and iterate through there events
+    // and once we find an uEcode that matches the current user, they are added to list
     private fun  getUsersOther() {
-        // Once we have the current User informtion we can seek the Administrators of the Event
-        // the Particpants can only talk to Administrators of the Event that they are signed up for
-        // so we interate through the Users that are classed as Admin, and iterate through there evenst
-        // and once we find an uEcode that matches the current user, they are added to list
-        Log.d("logged in User Type is ", " ${currentUser.uType}")
-        Log.d("in get Other Users", "looking for admin of Event")
         val stationListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
@@ -294,29 +256,27 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
             override fun onDataChange(p0: DataSnapshot) {
                 userList.clear()
                 p0.children.forEach {
-                    var user = it.getValue(User::class.java)
-
-                    // admin user has an "events object", that contains event info of ecah event
-                    var avts = it.child("events")
-                    avts.children.forEach {
-                        Log.d("with admin events key", it.key.toString())
-                        Log.d("with admin evenst value", it.value.toString())
+                    // we only need to Organisers that have set up events
+                    // if the you have events associated with then, then they will have an "events" node
+                    if (it.hasChild("events")) {
+                      var user = it.getValue(User::class.java)
+                      // admin user has an "events object", that contains event info of each event
+                      var avts = it.child("events")
+                      avts.children.forEach {
                         var avts2 = it
                         Log.d("inside the event events key avts2", avts2.toString())
                         avts2.children.forEach {
-                            Log.d("inside the event events key", it.key.toString())
-                            Log.d("inside the  event value", it.value.toString())
                             // we are looking for Admins that share are involved with same event
                             if (it.key.toString() == "uEcode" && currentUser.uOrgRef == it.value.toString()) {
                                 if (user != null && user.uType == "Admin" && currentUser.uUid != user.uUid) {
                                     userList.add(user!!)
+                                    recyclerviewNewMessage.adapter?.notifyDataSetChanged()
                                 }
                             }
 
                         }
+                      }
                     }
-                    recyclerviewNewMessage.adapter?.notifyDataSetChanged()
-                    // stationsReady()
                 }
             }
 
@@ -328,13 +288,35 @@ class NewMessageActivity : AppCompatActivity(),UserListener {
 
 
 
+//  com.me.o_chat.R.id.menu_new_station -> {
+//                val intent = Intent(this, NewStationActivity::class.java)
+//                Log.d("FA menu", "in Menu")
+//                startActivity(intent)
+//            }
+//            com.me.o_chat.R.id.menu_create_station -> {
+//                val intent = Intent(this, StationCreateActivity::class.java)
+//                Log.d("FA menu", "in Menu create")
+//                startActivity(intent)
 
 
 
+// for(item in selectedList){
+//                            var s = it.value
+//                            Log.d("selected List","${s}")
+//                        }
 
 
 
+    //selectedStrings.forEach {
+    //                            Log.d("selected String element","$it")
+    //
+    //
+    //                        // Log.d("inside the event events key", it.key.toString())
+    //                            Log.d("inside the  event value", it.value.toString())}
 
+
+    //Log.d("with admin events key", it.key.toString())
+    // Log.d("with admin evenst value", it.value.toString())
 }
 
 

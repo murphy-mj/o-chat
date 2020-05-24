@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -34,11 +36,16 @@ import kotlin.collections.ArrayList
 
 class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
-    lateinit var  messageList : ArrayList<Message>
-    val PERMISSION_ID = 42
-    lateinit var mFusedLocationClient: FusedLocationProviderClient
-    lateinit var auth: FirebaseAuth
+    // This is the first screen after login for the Participant
+    // It wil display any messages that the Participant has not viewed
+    // and will the launching platform for the menu items
 
+
+    lateinit var  messageList : ArrayList<Message>
+    lateinit var auth: FirebaseAuth
+    lateinit var uid:String
+    lateinit var MessTo:String
+    lateinit var MessFrom:String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,15 +54,28 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
         auth = FirebaseAuth.getInstance()
         val layoutManager = LinearLayoutManager(this)
         recyclerviewFirst.layoutManager = layoutManager as RecyclerView.LayoutManager
-        var uid = FirebaseAuth.getInstance().uid
-        Log.d("FA user uid", uid.toString())
+        uid = FirebaseAuth.getInstance().uid!!
         messageList = ArrayList<Message>()
 
 
        latestMessage()
+       recyclerviewFirst.adapter =  AdminAdapter(messageList,this)
+
+        // this should be activated if a TCM message is received in OcFirebaseMessagingService
+        val intent = intent
+        val message = intent.getStringExtra("message")
+        Log.d("TCM 2","in FirstActivity Message : ${message}")
+        if(!message.isNullOrEmpty()) {
+            if(message == "Please Begin Event"){
+
+            }
+            AlertDialog.Builder(this)
+                .setTitle("Event has Begun")
+                .setMessage(message)
+                .setPositiveButton("Ok", { dialog, which -> }).show()
+        }
 
 
-        recyclerviewFirst.adapter =  AdminAdapter(messageList,this)
 
 
     }
@@ -69,7 +89,6 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
         when (item?.itemId){
             R.id.menu_new_message -> {
               val intent = Intent(this,NewMessageActivity::class.java)
-                Log.d("FA menu", "in Menu")
                startActivity(intent)
             }
             R.id.menu_sign_out -> {
@@ -81,17 +100,13 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
             R.id.menu_list_events -> {
                 val intent = Intent(this,EventActivity::class.java)
-              //  intent.putExtra("Kuser",auth.currentUser )
-              //  Log.d("Event List menu", "in Menu")
                 startActivity(intent)
             }
 
             R.id.menu_leaderboard -> {
-                val intent = Intent(this,GoalAchievedActivity::class.java)
-                Log.d("FA menu", "in Menu create")
+                val intent = Intent(this,LeaderboardActivity::class.java)
                 startActivity(intent)
             }
-
 
         }
         return super.onOptionsItemSelected(item)
@@ -100,6 +115,9 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
 
 
+// on clicking the message it will be flagged as viewed and removed from view
+// we are recreating the message data and updating a field uViewed
+// then re-saving the message again, its one way :)
 
     override fun onMessageClick(message: Message){
         var tempMessage = Message()
@@ -108,12 +126,6 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
         var msgId = message.uUid
         var toM :String = message.uTo
         var fromM :String = message.uFrom
-        Log.d("User Message clicked", message.uText.toString())
-        Log.d("User Message clicke To",toM)
-        Log.d("User Message clicked From", fromM)
-        Log.d("User Message clicked tempM", tempMessage.toString())
-        Log.d("User Msg Dit", FirebaseDatabase.getInstance().getReference("/user-messages/${toM}/${fromM}").child(msgId).toString())
-
 
         val refM = FirebaseDatabase.getInstance().getReference("/user-messages/${toM}/${fromM}").child(msgId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -121,23 +133,53 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
                 }
 
                 override fun onDataChange(p0: DataSnapshot) {
-                    Log.d("Clicked Message p0",p0!!.toString())
                     var msg: Message = p0!!.getValue(Message::class.java)!!
                     Log.d("Clicked Message","${message.uText}")
                     if (msg != null) {
                         FirebaseDatabase.getInstance().getReference("/user-messages/${toM}/${fromM}").child(msgId).setValue(tempMessage)
+                            .addOnSuccessListener {getUserTo({getUserFrom(toM,fromM)},toM,fromM)  }
+                         // this call to getUserTo and FRom results in a Toat message, which works fine for participant
                         recyclerviewFirst.adapter?.notifyDataSetChanged()
                     }
-
                 }
             })
 
 
+        val refM2 = FirebaseDatabase.getInstance().getReference("/user-messages/${fromM}/${toM}").child(msgId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onCancelled(dataSnapshot: DatabaseError) {
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    var msg: Message = p0!!.getValue(Message::class.java)!!
+                    Log.d("Clicked Message","${message.uText}")
+                    if (msg != null) {
+                        FirebaseDatabase.getInstance().getReference("/user-messages/${fromM}/${toM}").child(msgId).setValue(tempMessage)
+                            .addOnSuccessListener {getUserTo({getUserFrom(toM,fromM)},toM,fromM)  }
+                        // this call to getUserTo and FRom results in a Toat message, which works fine for participant
+                        recyclerviewFirst.adapter?.notifyDataSetChanged()
+                    }
+                }
+            })
+
     }
 
-  private fun latestMessage() {
+
+
+
+
+
+
+
+
+    // we are going through all the Participants messages to see which one has not been viewed
+    // and adding these to the MessageList Array, for use in the Message Adapter
+    // the "toM" will always be the current logging in person
+    // once we have the list these are sorted before send to the Adapter for display
+
+    private fun latestMessage() {
       val toM = FirebaseAuth.getInstance().currentUser?.uid.toString()
-      // val  fromM = contact.uUid.toString()
+
       val refM = FirebaseDatabase.getInstance().getReference("/user-messages/${toM}")
           .addChildEventListener(object : ChildEventListener {
               override fun onCancelled(p0: DatabaseError) {
@@ -146,12 +188,7 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
               override fun onChildAdded(p0: DataSnapshot, p1: String?) {
                   // each time messages db has a new entry, its add to the array list
                   messageList.clear()
-                  Log.d("new message user p1", p1.toString())
-                  Log.d("new message datasnap User", p0.toString())
-                  Log.d("new message key User", p0.key.toString())
-                  Log.d("new message child User", p0.child(p0.key.toString()).toString())
                   p0.children.forEach {
-                      Log.d("on child added", it.toString())
                       var message = it.getValue(Message::class.java)
                       if(message != null && message.uViewed == false && message.uTo == toM) {
                           messageList.add(message!!)
@@ -160,15 +197,9 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
                   }
                   Collections.sort(messageList, compareByDescending({it.uTimeStamp}))
-
                   recyclerviewFirst.adapter?.notifyDataSetChanged()
 
-                 // var message = p0.getValue(Message::class.java)
-                //  Log.d("new message", message.toString())
-                //  if (message != null) {
-                //      messageList.add(message)
-                //      recyclerviewFirst.adapter?.notifyDataSetChanged()
-                //  }
+
               }
 
               override fun onChildMoved(p0: DataSnapshot, p1: String?) {
@@ -176,10 +207,6 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
               override fun onChildChanged(p0: DataSnapshot, p1: String?) {
                   messageList.clear()
-                  Log.d("new message user p1 changed", p1.toString())
-                  Log.d("new message datasnap User changed", p0.toString())
-                  Log.d("new message key User changed", p0.key.toString())
-                  Log.d("new message child User changed ", p0.child(p0.key.toString()).toString())
                   p0.children.forEach {
                       Log.d("on Child Changed", it.toString())
                       var message = it.getValue(Message::class.java)
@@ -198,12 +225,55 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 
               }
           })
-      //  Log.d("at messageAdpter", "size =  ${messageList.size}")
 
-  }
+
+    }
+
+
+    private fun  getUserTo(stationsReady: () -> Unit,toM :String,fromM:String) {
+        val stationListener = object : ValueEventListener {
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                MessTo = ""
+                var TUser = p0.getValue(User::class.java)
+                var toName = TUser?.uName
+                stationsReady( )
+            }
+        }
+
+
+        FirebaseDatabase.getInstance().getReference().child("/users/${toM}").addListenerForSingleValueEvent(stationListener)
+    }
+
+    private fun  getUserFrom(toM :String,fromM:String) {
+        val stationListener = object : ValueEventListener {
+
+            override fun onCancelled(p0: DatabaseError) {
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                MessFrom = ""
+                var FrmuUser = p0.getValue(User::class.java)
+                var FromName = FrmuUser?.uName
+                Toast.makeText(applicationContext, "Mesage from ${FromName}",Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+        FirebaseDatabase.getInstance().getReference().child("/users/${fromM}").addListenerForSingleValueEvent(stationListener)
+    }
+
+
+
 
 
     // to be deleted
+
+//  //  Log.d("at messageAdpter", "size =  ${messageList.size}")
+
     //R.id.menu_new_station -> {
     //                val intent = Intent(this,NewStationActivity::class.java)
     //                Log.d("FA menu", "in Menu")
@@ -221,6 +291,28 @@ class FirstActivity : AppCompatActivity(), MessageAdminListener {
 //                startActivity(intent)
 //            }
 
+
+    // R.id.menu_image -> {
+    //                val intent = Intent(this,ImageCaptureActivity::class.java)
+    //                Log.d("image menu", "in Menu create")
+    //                intent.putExtra("Kparticpant",uid )
+    //                startActivity(intent)
+    //                        }
+
+    // <item android:id="@+id/menu_image"
+    //        android:title="Image capture">
+    //    </item>
+
+
+    // var message = p0.getValue(Message::class.java)
+    //  Log.d("new message", message.toString())
+    //  if (message != null) {
+    //      messageList.add(message)
+    //      recyclerviewFirst.adapter?.notifyDataSetChanged()
+    //  }
+
+    // // val PERMISSION_ID = 42
+    //   // lateinit var mFusedLocationClient: FusedLocationProviderClient
 }
 
 

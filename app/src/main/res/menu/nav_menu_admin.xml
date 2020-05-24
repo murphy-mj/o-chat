@@ -2,31 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/menu_new_message"
-        android:title="New Message">
+        android:title="Send Message">
     </item>
     <item android:id="@+id/menu_new_event"
-        android:title="New Event">
+        android:title="Create Event">
     </item>
     <item android:id="@+id/menu_list_events"
         android:title="List Events">
     </item>
-    <item android:id="@+id/menu_new_station"
-        android:title="New Station">
-    </item>
-    <item android:id="@+id/menu_create_station"
-        android:title="Create Station">
-    </item>
-
     <item android:id="@+id/menu_manage_members"
-        android:title="Allocate Mems">
+        android:title="Approve Participants">
     </item>
-
     <item android:id="@+id/menu_sign_out"
         android:title="Sign Out">
-</item>
-    <item android:id="@+id/menu_leaderboard"
-        android:title="Leaderboard">
     </item>
-
+    <item android:id="@+id/menu_start_event"
+        android:title="Start Event">
+    </item>
 
 </menu>

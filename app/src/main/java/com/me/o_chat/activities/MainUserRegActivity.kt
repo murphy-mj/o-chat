@@ -15,7 +15,6 @@ import com.me.o_chat.activities.LoginActivity
 import com.me.o_chat.R
 import com.me.o_chat.helpers.readImage
 import com.me.o_chat.helpers.showImagePicker
-import kotlinx.android.synthetic.main.activity_registration.*
 import android.net.Uri
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.gms.tasks.Tasks.await
@@ -28,6 +27,7 @@ import com.me.o_chat.models.User
 import kotlinx.android.synthetic.main.activity_registration.reg_tv_note
 import kotlinx.android.synthetic.main.activity_registration.select_photo
 import kotlinx.android.synthetic.main.activity_registration2.*
+import kotlinx.android.synthetic.main.activity_registration_part.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 
@@ -51,29 +51,13 @@ class MainUserRegActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_registration)
+        setContentView(R.layout.activity_registration_part)
 
         auth = FirebaseAuth.getInstance()
         db = FirebaseDatabase.getInstance()
         st = FirebaseStorage.getInstance()
 
-        select_photo.setOnClickListener {
-            Log.d("main", "hey select photo")
 
-          //   val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-
-            // shows camera dir of images
-           //  val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-
-            // this is for CAMERA
-              val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-
-             intent.type = "image/*"
-
-            showImagePicker(this, 12)
-
-            startActivityForResult(intent,12)
-        }
 
 
 
@@ -101,44 +85,22 @@ class MainUserRegActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-// this set the image or resets the image in the Button of the Register/ MainActivity
-// the selectPhot is an object that will be available to all functions
-
-        if (requestCode == 12 && resultCode == Activity.RESULT_OK && data != null) {
-            Log.d("ImageSelected", "here now")
-            selectedPhoto = data.data
-
-            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhoto)
-            select_photo.alpha = 0f
-            profile_image.setImageBitmap(bitmap)
-
-           // val bitmapDrawable = BitmapDrawable(bitmap)
-           // select_photo.setBackgroundDrawable(bitmapDrawable)
-          //  letsStoreImageToStorage()
-        }
-
     }
 
 
-    // will register User and save the users photo to the storage database
-    // and the location will be save in the User Object
+    // will register User
     private fun letsRegisterCustomer(uPassword: String, uEmail: String, uName:String, uOrgRef:String){
 
         auth.createUserWithEmailAndPassword(uEmail, uPassword)
             .addOnCompleteListener {
                 if (!it.isSuccessful) return@addOnCompleteListener
-                Log.d("Register", "Register successful")
+                Log.d("Register", "Authorisation successful")
                 val uid = auth.currentUser!!.uid
                 val email = uEmail
                 val name = uName
-                 val orgRef:String = uOrgRef
-                lateinit var image :String
-               // image = letsStoreImageToStorage()
-                image = storeLoc
-                Log.d("msg", "this is the Image , in lets Reg ${image}")
-
-
-                val user = User(name,email,image,uid,orgRef,"Participant")
+                val orgRef:String = uOrgRef
+                // decide not to accept a Participant Image
+                val user = User(name,email,"",uid,orgRef,"pending","Participant")
                 runBlocking {
                     saveUserToDataBase(user)
                 }
@@ -154,61 +116,18 @@ class MainUserRegActivity : AppCompatActivity() {
 
     }
 
-//    private fun updateImageToFB() {
-//        val userId = FirebaseAuth.getInstance().currentUser!!.uid
-//        val db = FirebaseDatabase.getInstance().reference
-//        db.child("users").child(userId).setValue(userId)
-        //  st = FirebaseStorage.getInstance().reference
-        //  val fileName = File(selectedPhoto)
-        //  val imageName = fileName.getName()
-
-        //  Log.d("Register Photo","loaded to storatge ${selectedPhoto}")
-        // st.putFile(selectedPhoto!!).addOnSuccessListener {
-        //  Log.d("Register Photo","loaded to storatge ${it.metadata?.path}")
-//    }
-
-// storing updated image to St
-//    private fun saveImageSorageRefToDataBase(profileImageUrl: String) {
-//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-//        val ref = FirebaseDatabase.getInstance().getReference("/users/${uid}")
-//        val user = User("jack",profileImageUrl,uid!!)
-//        ref.setValue(user!!)
-//    }
-
     private fun saveUserToDataBase(user: User) {
         val ref = FirebaseDatabase.getInstance().getReference("/users/${user.uUid}")
         ref.setValue(user).addOnSuccessListener {
-            letsStoreImageToStorage(user)
-
+            Log.d("REGISTERED", "Participant ${user.uName} regitered")
+        }
         }
 
-    }
-
-    private fun letsStoreImageToStorage(user: User){
-        //        //runBlocking {
-            storeLoc = ""
-            val fileName = UUID.randomUUID().toString()
-            var store = st.getReference("/Image/${fileName}")
-
-        val dtatab = db.getReference("/users/${user.uUid}")
-
-           store.putFile(selectedPhoto!!).addOnSuccessListener {
-                Log.d("msg", "Uploaded Image to storage ${it.metadata?.path}")
-                store.downloadUrl.addOnSuccessListener {
-                   Log.d("msg", "saving storage ref to DB ${it.toString()}")
-                    // saveImageSorageRefToDataBase(it.toString())
-                    storeLoc = it.toString()
-                    val ref = FirebaseDatabase.getInstance().getReference("/users/${user.uUid}")
-                    ref.child("uimage").setValue(storeLoc)
 
 
-                }
-            }
-      //  }
-        //  Log.d("msg", "This is the ref that is being returned ${storeLoc}")
-                // return storeLoc
-    }
 
+
+    // to be deleted
 
 
  //   Future<String> uploadPic(File _image) async {
@@ -224,4 +143,97 @@ class MainUserRegActivity : AppCompatActivity() {
   //  }
 
 
-    }
+    //    private fun updateImageToFB() {
+//        val userId = FirebaseAuth.getInstance().currentUser!!.uid
+//        val db = FirebaseDatabase.getInstance().reference
+//        db.child("users").child(userId).setValue(userId)
+    //  st = FirebaseStorage.getInstance().reference
+    //  val fileName = File(selectedPhoto)
+    //  val imageName = fileName.getName()
+
+    //  Log.d("Register Photo","loaded to storatge ${selectedPhoto}")
+    // st.putFile(selectedPhoto!!).addOnSuccessListener {
+    //  Log.d("Register Photo","loaded to storatge ${it.metadata?.path}")
+//    }
+
+//select_photo.setOnClickListener {
+//            Log.d("main", "hey select photo")
+//
+//          //   val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+//
+//            // shows camera dir of images
+//           //  val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+//
+//            // this is for CAMERA
+//              val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//
+//             intent.type = "image/*"
+//
+//            showImagePicker(this, 12)
+//
+//            startActivityForResult(intent,12)
+//        }
+
+    // storing updated image to St
+//    private fun saveImageSorageRefToDataBase(profileImageUrl: String) {
+//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+//        val ref = FirebaseDatabase.getInstance().getReference("/users/${uid}")
+//        val user = User("jack",profileImageUrl,uid!!)
+//        ref.setValue(user!!)
+//    }
+
+
+    //// this set the image or resets the image in the Button of the Register/ MainActivity
+        //// the selectPhot is an object that will be available to all functions
+        //
+        //        if (requestCode == 12 && resultCode == Activity.RESULT_OK && data != null) {
+        //            Log.d("ImageSelected", "here now")
+        //            selectedPhoto = data.data
+        //
+        //            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhoto)
+        //            select_photo.alpha = 0f
+        //            profile_image.setImageBitmap(bitmap)
+        //
+        //           // val bitmapDrawable = BitmapDrawable(bitmap)
+        //           // select_photo.setBackgroundDrawable(bitmapDrawable)
+        //          //  letsStoreImageToStorage()
+        //        }
+        //
+        //    }
+
+
+
+        //  private fun letsStoreImageToStorage(user: User){
+        //        //        //runBlocking {
+        //            storeLoc = ""
+        //            val fileName = UUID.randomUUID().toString()
+        //            var store = st.getReference("/Image/${fileName}")
+        //
+        //        val dtatab = db.getReference("/users/${user.uUid}")
+        //
+        //           store.putFile(selectedPhoto!!).addOnSuccessListener {
+        //                Log.d("msg", "Uploaded Image to storage ${it.metadata?.path}")
+        //                store.downloadUrl.addOnSuccessListener {
+        //                   Log.d("msg", "saving storage ref to DB ${it.toString()}")
+        //                    // saveImageSorageRefToDataBase(it.toString())
+        //                    storeLoc = it.toString()
+        //                    val ref = FirebaseDatabase.getInstance().getReference("/users/${user.uUid}")
+        //                    ref.child("uimage").setValue(storeLoc)
+        //
+        //
+        //                }
+        //            }
+        //      //  }
+        //        //  Log.d("msg", "This is the ref that is being returned ${storeLoc}")
+        //                // return storeLoc
+        //    }
+
+
+    // lateinit var image :String
+    // image = letsStoreImageToStorage()
+    //   image = storeLoc
+    //  Log.d("msg", "this is the Image , in lets Reg ${image}")
+
+
+
+}

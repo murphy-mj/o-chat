@@ -7,7 +7,7 @@ import kotlinx.android.parcel.Parcelize
 class Result(var rName: String = "",
              var rNumberAch: Int = 0,
              var rUid: String = "",
-             var rTimeTaken :Int = 0,
+             var rTimeTaken :Long = 0L,
              var rUserId: String = "",
              var rEventId: String = ""
 ) : Parcelable{

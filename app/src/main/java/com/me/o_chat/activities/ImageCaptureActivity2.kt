@@ -60,7 +60,7 @@ class ImageCaptureActivity2 : AppCompatActivity() {
 
             val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             photoFile = getPhotoFile(UUID.randomUUID().toString())
-            val fileProvider = FileProvider.getUriForFile(this,"com.me.o_chat.fileprovider",photoFile)
+            val fileProvider = FileProvider.getUriForFile(this,"com.me.o-chat.fileprovider",photoFile)
             Log.d("msg", "In btn Listener  ${photoFile.absolutePath.toUri()}")
 
             letsStoreImageToStorage(photoFile.toString())

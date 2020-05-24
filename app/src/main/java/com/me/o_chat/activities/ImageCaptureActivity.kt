@@ -39,6 +39,7 @@ import com.me.o_chat.BuildConfig
 import com.me.o_chat.R
 import kotlinx.android.synthetic.main.activity_image_textureview.*
 import kotlinx.android.synthetic.main.activity_station_create_p1.*
+import org.jetbrains.anko.`$$Anko$Factories$Sdk15ViewGroup`.GALLERY
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -76,13 +77,19 @@ class ImageCaptureActivity : AppCompatActivity() {
     var eventName: String = ""
     var eventId: String = ""
     var teamId: String = ""
-    var admin: String = ""
+    var userId: String = ""
     var stationId: String = ""
+    lateinit var userType: String
+    lateinit var refId: String
+    private  lateinit var InPt: String
+
+
 
     @SuppressLint("WrongViewCast")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        admin = FirebaseAuth.getInstance().currentUser?.uid.toString()
+        // admin
+       // userId = FirebaseAuth.getInstance().currentUser?.uid.toString()
         //   setContentView(R.layout.activity_image_capture)
         setContentView(R.layout.activity_image_textureview)
         //   btn = findViewById<View>(R.id.btn) as Button
@@ -90,22 +97,27 @@ class ImageCaptureActivity : AppCompatActivity() {
         //   btn!!.setOnClickListener { showPictureDialog() }
 
         viewFinder = findViewById(R.id.view_finder)
-
+        db = FirebaseDatabase.getInstance()
         st = FirebaseStorage.getInstance()
 
-      //  if (intent.hasExtra("sUid")) {
-      //      eventName = intent.getStringExtra("Event")
-      //      stationId = intent.extras?.getString("sUid")!!
-      //  }
+// ImageCaptureActivity
 
-        if (intent.hasExtra("sUid")) {
-            stationId = intent.extras?.getString("sUid")!!
-            eventId = intent.extras?.getString("EventId")!!
-            eventName = intent.extras?.getString("EventN")!!
+        // this is called when the station has been reached and the Notification received
+        // user hs entered a Message
+
+        if (intent.hasExtra("KeventId")) {
+            stationId = intent.extras?.getString("KstationId")!!
+            eventId = intent.extras?.getString("KeventId")!!
+            userId = intent.extras?.getString("KuserId")!!
+            refId = intent.extras?.getString("KrefId")!!
+            //  eventName = intent.extras?.getString("EventN")!!
         }
 
 
+        if (intent.hasExtra("Kparticipant")) {
+          userType = "Participant"
 
+        }
 
         if (allPermissionsGranted()) {
             viewFinder.post { startCamera() }
@@ -120,12 +132,17 @@ class ImageCaptureActivity : AppCompatActivity() {
             updateTransform()
         }
 
-        findViewById<Button>(R.id.btn_home).setOnClickListener {
-            val intent = Intent(this, EventActivity::class.java)
-            // intent.putExtra("Kstation",station )
-            startActivity(intent)
 
-        }
+
+
+
+
+    //    findViewById<Button>(R.id.btn_home).setOnClickListener {
+    //        val intent = Intent(this, EventActivity::class.java)
+    //        // intent.putExtra("Kstation",station )
+    //        startActivity(intent)
+
+    //    }
 
 
     }
@@ -243,6 +260,7 @@ class ImageCaptureActivity : AppCompatActivity() {
                 }
 
                 override fun onImageSaved(file: File) {
+                    Log.d("Images", "in On ImageSaved")
                     val fileone = Uri.fromFile(file)
                     val stRef = st.reference.child("image/${fileone.lastPathSegment}")
                     var uploadTask = stRef.putFile(fileone)
@@ -250,16 +268,17 @@ class ImageCaptureActivity : AppCompatActivity() {
 
                     }.addOnSuccessListener { taskSnapshot ->
                         taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
-                          //  FirebaseDatabase.getInstance().getReference().child(admin).child(eventId)
-                            FirebaseDatabase.getInstance().getReference().child("events").child(eventId)
-                                .child("stations").child(stationId)
-                                .child("simage")
-                                .setValue(taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
+                         //  FirebaseDatabase.getInstance().getReference().child("users").child(userId).child("images").setValue(taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
 
-                            Log.d(
-                                "Saved image to db",
-                                taskSnapshot.metadata!!.reference!!.downloadUrl.toString()
-                            )
+                          //  FirebaseDatabase.getInstance().getReference().child("events").child(eventId)
+                          //      .child("stations").child(stationId)
+                          //      .child("simage")
+                          //      .setValue(taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
+
+                        //    Log.d(
+                          //      "Saved image to db",
+                            //    taskSnapshot.metadata!!.reference!!.downloadUrl.toString()
+                           // )
 //                           // FirebaseDatabase.getInstance().getReference().child(teamId).child(Event).child("images")
 //                           .setValue(taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
                         }
@@ -278,6 +297,11 @@ class ImageCaptureActivity : AppCompatActivity() {
                     }.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val downloadUri = task.result
+                            Log.d("DOWNLOAD URL","${downloadUri}")
+                            //save the image ref to the Goal Achieved Object
+                          db.getReference().child("GoalAchieved").child(eventId).child("Stations").child(stationId).child(refId).child("gimage").setValue(downloadUri.toString())
+
+
                         } else {
 
                         }
@@ -296,10 +320,10 @@ class ImageCaptureActivity : AppCompatActivity() {
                     val msg4 = "Photo capture succeeded: ${file.absolutePath}"
 
                     val msg5 =
-                        " Photp external content URI {android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI}"
+                        " Photp external content URI ${android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI}"
 
                     val msg6 =
-                        " Photp internal content URI {android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI}"
+                        " Photp internal content URI ${android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI}"
 
                     val msg7 = "Photo capture succeeded url: ${file.toURL()}"
                     Log.d("CameraXApp", msg)
@@ -444,10 +468,11 @@ class ImageCaptureActivity : AppCompatActivity() {
 
         val galleryIntent = Intent(
             Intent.ACTION_PICK,
-            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            externalMediaDirs.first().toUri()
+           // android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         )
         Log.d("external PUT EXTRA", selectedPhotoPath.toString())
-        galleryIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, selectedPhotoPath)
+     //   galleryIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, selectedPhotoPath)
 
         //         MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         // /storage/emulated/0/Android/media/o_chat

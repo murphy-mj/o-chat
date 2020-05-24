@@ -7,48 +7,47 @@
     android:background="#1FCC26"
     tools:context=".activities.StationCreateActivity">
 
+
     <EditText
         android:id="@+id/eNameC"
-        android:layout_width="312dp"
-        android:layout_height="52dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="100dp"
         android:layout_marginEnd="32dp"
         android:ems="10"
-        android:hint="Event Name"
         android:includeFontPadding="false"
         android:inputType="textPersonName"
         android:paddingLeft="20dp"
+        android:textAlignment="center"
+        android:textColorLink="@color/colorAccent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias=".5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
     <EditText
         android:id="@+id/stationCname"
-        android:layout_width="317dp"
-        android:layout_height="62dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
         android:ems="10"
-        android:hint="Station Name"
+        android:hint="Enter Station name here"
         android:includeFontPadding="false"
         android:inputType="textPersonName"
         android:paddingLeft="20dp"
         app:layout_constraintEnd_toEndOf="@+id/eNameC"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/eNameC"
         app:layout_constraintTop_toBottomOf="@+id/eNameC" />
-
 
     <EditText
         android:id="@+id/stationCdescription"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ems="10"
-        android:hint="Description od Station"
+        android:hint="Add description of Station here"
         android:inputType="text|textLongMessage"
         android:paddingLeft="20dp"
         app:layout_constraintEnd_toEndOf="@+id/stationCname"
@@ -56,31 +55,18 @@
         app:layout_constraintStart_toStartOf="@+id/stationCname"
         app:layout_constraintTop_toBottomOf="@+id/stationCname" />
 
-    <EditText
-        android:id="@+id/publicEcode"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="8dp"
-        android:ems="10"
-        android:hint="XXXX2020"
-        android:inputType="text|textLongMessage"
-        android:paddingLeft="20dp"
-        app:layout_constraintEnd_toEndOf="@+id/stationCdescription"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/stationCdescription"
-        app:layout_constraintTop_toBottomOf="@+id/stationCdescription" />
 
     <Button
         android:id="@+id/station_add_btn"
-        android:layout_width="235dp"
-        android:layout_height="60dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
         android:text="Add Station"
         android:textColor="@android:color/white"
-        app:layout_constraintEnd_toEndOf="@+id/publicEcode"
-        app:layout_constraintHorizontal_bias="0.536"
-        app:layout_constraintStart_toStartOf="@+id/publicEcode"
-        app:layout_constraintTop_toBottomOf="@+id/publicEcode" />
+        app:layout_constraintEnd_toEndOf="@+id/stationCdescription"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/stationCdescription"
+        app:layout_constraintTop_toBottomOf="@+id/stationCdescription" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

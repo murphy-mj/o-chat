@@ -11,6 +11,7 @@ import com.me.o_chat.R
 import com.me.o_chat.models.GoalAchObj
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.card_goal.view.*
+import kotlinx.android.synthetic.main.card_leaderboard.view.*
 //import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.card_user.view.*
 
@@ -30,7 +31,7 @@ class GoalAchievedAdapter constructor(var goals: ArrayList<Result>,
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
         return MainHolder(
             LayoutInflater.from(parent?.context).inflate(
-                R.layout.card_goal,
+                R.layout.card_leaderboard,
                 parent,
                 false
             )
@@ -53,23 +54,10 @@ class GoalAchievedAdapter constructor(var goals: ArrayList<Result>,
 
         fun bind(goal: Result, listener: GoalListener) {
           //  itemView.tag = goal
-            itemView.goalTeam.text = goal.rUserId.toString()
-            itemView.goalMessage.text = goal.rTimeTaken.toString()
+            itemView.group_name.text = "Team Name :${goal.rName}"
+            itemView.no_achieved.text = "Number of Stations completed : ${goal.rNumberAch}"
+            itemView.time_taken.text = "Time taken : ${goal.rTimeTaken}"
            // itemView.setOnClickListener { listener.onGoalClick(goal) }
-            // if(!reportAll)
-            //    itemView.setOnClickListener { listener.onPlacemarkClick(placemark) }
-//
-            //          if(!placemark.profilepic.isEmpty()) {
-            ///            Picasso.get().load(placemark.profilepic.toUri())
-            //              //.resize(180, 180)
-            //            .transform(CropCircleTransformation())
-            //          .into(itemView.imageIcon)
-            //}
-            //    else
-            //        itemView.imageIcon.setImageResource(R.mipmap.ic_launcher_homer_round)
-            // }
-
-         ////   Glide.with(itemView.context).load(goal.gImage).into(itemView.goalIcon)
         }
     }
 }
